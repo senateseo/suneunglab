@@ -28,7 +28,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<ExtendedAuthUser | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
   const authCheckTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const isMountedRef = useRef(true) // 컴포넌트 마운트 상태 추적

@@ -13,34 +13,6 @@ export default function AdminLayout({ children }) {
   const pathname = usePathname()
   const router = useRouter()
 
-  // 관리자가 아닌 경우 리디렉션
-  useEffect(() => {
-    // 로딩 중일 때는 리디렉션하지 않음
-    if (isLoading) return
-
-    // 디버깅 정보 출력
-    console.log("관리자 레이아웃 접근:", {
-      user: user
-        ? {
-            email: user.email,
-            role: user.role,
-          }
-        : null,
-      isAdmin,
-    })
-
-    // 사용자가 없는 경우에만 리디렉션
-    if (!user) {
-      console.log("사용자 정보 없음, 로그인 페이지로 리디렉션")
-      router.push("/auth/login")
-      return
-    }
-
-    // 관리자가 아닌 경우 처리 (리디렉션하지 않고 UI로 표시)
-    if (!isAdmin) {
-      console.log("관리자 권한 없음, 접근 거부 UI 표시")
-    }
-  }, [user, isAdmin, isLoading, router])
 
   if (isLoading) {
     return (

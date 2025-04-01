@@ -155,18 +155,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     fetchUser()
 
-    // 인증 상태 변경 감지
-    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("인증 상태 변경:", event, session ? "세션 있음" : "세션 없음")
 
-      if (!isMountedRef.current) return
-
-      if (event === "SIGNED_IN" && session) {
-        await fetchUser()
-      } else if (event === "SIGNED_OUT") {
-        safeSetState(setUser, null)
-      }
-    })
 
     return () => {
       // 컴포넌트 언마운트 시 플래그 설정 및 리소스 정리
@@ -224,30 +213,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       console.log("로그인 성공:", data)
 
-      // 특정 관리자 이메일 목록 (임시 해결책)
-      const adminEmails = ["suneunglab1@gmail.com", "admin@example.com"]
-
-      // 관리자 이메일인 경우 바로 관리자 권한 부여
-      if (adminEmails.includes(data.user.email || "")) {
-        console.log("이메일 기반으로 관리자 권한 부여:", data.user.email)
-
-        const userWithRole = {
-          id: data.user.id,
-          email: data.user.email || "",
-          name: data.user.user_metadata?.name,
-          avatar_url: data.user.user_metadata?.avatar_url,
-          role: "admin",
-          status: "active",
-        }
-
-        setUser(userWithRole)
-
-        // 페이지 이동 전에 상태 업데이트가 반영될 시간을 줍니다
-        setTimeout(() => {
-          router.push("/admin/dashboard")
-        }, 100)
-        return
-      }
 
       // 사용자 프로필 정보 가져오기 시도
       try {
@@ -276,12 +241,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             throw new Error("계정이 차단되었습니다. 관리자에게 문의하세요.")
           }
 
-          // 관리자인 경우 관리자 페이지로 리디렉션
-          if (profileData.role === "admin") {
-            router.push("/admin/dashboard")
-          } else {
-            router.push("/my-page")
-          }
         } else {
           // 프로필이 없는 경우 기본 사용자 정보 설정
           setUser({
@@ -338,9 +297,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // 관리자 여부 확인
   // 관리자 여부 확인 (임시 해결책)
-  const isAdmin = Boolean(
-    user?.role === "admin" || (user?.email && ["suneunglab1@gmail.com", "admin@example.com"].includes(user.email)),
-  )
+  console.log("user", user)
+  const isAdmin = Boolean(user?.role === "admin")
 
   return (
     <AuthContext.Provider

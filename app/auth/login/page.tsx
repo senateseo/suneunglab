@@ -22,20 +22,6 @@ export default function LoginPage() {
   const { toast } = useToast()
   const router = useRouter()
 
-  // 이미 로그인한 사용자가 로그인 페이지에 접근하면 메인 페이지로 리디렉션
-  useEffect(() => {
-    // 인증 로딩이 완료되고 사용자가 있는 경우에만 리디렉션
-    if (!authLoading && user) {
-      console.log("이미 로그인된 사용자가 로그인 페이지에 접근, 메인 페이지로 리디렉션")
-
-      // 타임아웃을 사용하여 무한 루프 방지
-      const redirectTimer = setTimeout(() => {
-        router.push("/")
-      }, 100)
-
-      return () => clearTimeout(redirectTimer)
-    }
-  }, [user, authLoading, router])
 
   // 인증 로딩 중이면 로딩 상태 표시
   if (authLoading) {
@@ -49,20 +35,6 @@ export default function LoginPage() {
     )
   }
 
-  // 이미 로그인한 경우 리디렉션 메시지 표시
-  if (user) {
-    return (
-      <div className="container mx-auto flex items-center justify-center min-h-[calc(100vh-4rem)] px-4">
-        <div className="text-center">
-          <p className="mb-2">이미 로그인되어 있습니다</p>
-          <p className="mb-4">메인 페이지로 이동합니다...</p>
-          <Button asChild>
-            <Link href="/">메인 페이지로 이동</Link>
-          </Button>
-        </div>
-      </div>
-    )
-  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

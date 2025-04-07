@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, Suspense } from "react"
+import { useState, Suspense, useEffect } from "react"
 import Link from "next/link"
 import { useSearchParams, useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -9,34 +9,9 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { BookOpen, CreditCard, ArrowLeft, CheckCircle } from "lucide-react"
+import { loadTossPayments, ANONYMOUS } from "@tosspayments/tosspayments-sdk";
 
 // Mock data for courses
-const courses = {
-  "1": {
-    id: 1,
-    title: "수능 국어 완성",
-    description: "문학, 비문학, 화법과 작문, 문법까지 국어 영역의 모든 것을 마스터하세요.",
-    price: 149.99,
-    image: "/placeholder.svg?height=200&width=400",
-    instructor: "김민석",
-  },
-  "2": {
-    id: 2,
-    title: "수능 수학 기초",
-    description: "수학의 기본 개념부터 차근차근 배워 수능 수학의 기초를 다지세요.",
-    price: 129.99,
-    image: "/placeholder.svg?height=200&width=400",
-    instructor: "이수진",
-  },
-  "3": {
-    id: 3,
-    title: "수능 영어 독해 전략",
-    description: "지문 유형별 독해 전략과 빈출 어휘를 학습하여 영어 영역을 정복하세요.",
-    price: 139.99,
-    image: "/placeholder.svg?height=200&width=400",
-    instructor: "박준영",
-  },
-}
 
 // 로딩 상태를 표시하는 컴포넌트
 function PaymentPageSkeleton() {
@@ -55,20 +30,106 @@ function PaymentPageSkeleton() {
   )
 }
 
+
+const clientKey:any = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY;
 // 실제 결제 페이지 컴포넌트
 function PaymentPageContent() {
+
+
+function generateRandomString() {
+  return window.btoa(Math.random().toString()).slice(0, 20);
+}
+
+  const customerKey = generateRandomString();
   const searchParams = useSearchParams()
   const router = useRouter()
   const courseId = searchParams.get("courseId") || "1"
-  const course = courses[courseId]
+  const [course, setCourse] = useState(null);
+  const [ready, setReady] = useState(false);
 
   const [agreements, setAgreements] = useState({
     usageAndRefund: false,
     privacy: false,
   })
 
+  const [amount, setAmount]:any = useState({
+    currency: "KRW",
+    value: 50000,
+  });
+
   const [isProcessing, setIsProcessing] = useState(false)
-  const [paymentComplete, setPaymentComplete] = useState(false)
+  const [paymentComplete, setPaymentComplete] = useState(false);
+  const [widgets, setWidgets]:any = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    async function fetchCourse() {
+      setIsLoading(true);
+      try {
+        const response = await fetch(`/api/courses/${courseId}`);
+        const data = await response.json();
+        setCourse(data);
+      } catch (error) {
+        console.error("Error fetching course:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchCourse();
+  }, [courseId]);
+
+  useEffect(() => {
+    async function fetchPaymentWidgets() {
+      try {
+        const tossPayments = await loadTossPayments(clientKey);
+
+        // 회원 결제
+        // @docs https://docs.tosspayments.com/sdk/v2/js#tosspaymentswidgets
+        const widgets = tossPayments.widgets({
+          customerKey,
+        });
+        // 비회원 결제
+        // const widgets = tossPayments.widgets({ customerKey: ANONYMOUS });
+
+        setWidgets(widgets);
+      } catch (error) {
+        console.error("Error fetching payment widget:", error);
+      }
+    }
+    fetchPaymentWidgets();
+  }, [courseId]);
+
+  useEffect(() => {
+    async function renderPaymentWidgets() {
+      if (widgets == null) {
+        return;
+      }
+
+      // ------  주문서의 결제 금액 설정 ------
+      // TODO: 위젯의 결제금액을 결제하려는 금액으로 초기화하세요.
+      // TODO: renderPaymentMethods, renderAgreement, requestPayment 보다 반드시 선행되어야 합니다.
+      // @docs https://docs.tosspayments.com/sdk/v2/js#widgetssetamount
+      await widgets.setAmount(amount);
+
+      await Promise.all([
+        // ------  결제 UI 렌더링 ------
+        widgets.renderPaymentMethods({
+          selector: "#payment-method",
+          variantKey: "DEFAULT",
+        }),
+        // ------  이용약관 UI 렌더링 ------
+        // @docs https://docs.tosspayments.com/sdk/v2/js#widgetsrenderagreement
+        widgets.renderAgreement({
+          selector: "#agreement",
+          variantKey: "AGREEMENT",
+        }),
+      ]);
+
+      setReady(true);
+    }
+
+    renderPaymentWidgets();
+  }, [widgets, courseId]);
 
   const handleAgreementChange = (key) => {
     setAgreements((prev) => ({
@@ -81,7 +142,7 @@ function PaymentPageContent() {
     router.push(`/courses/${courseId}`)
   }
 
-  const handleProceed = () => {
+  const handleProceed = async () => {
     if (!agreements.usageAndRefund || !agreements.privacy) {
       alert("진행하려면 모든 약관에 동의해주세요.")
       return
@@ -89,16 +150,29 @@ function PaymentPageContent() {
 
     setIsProcessing(true)
 
-    // Simulate payment processing
-    setTimeout(() => {
-      setIsProcessing(false)
-      setPaymentComplete(true)
+    try {
 
-      // Redirect to success page after a delay
-      setTimeout(() => {
-        router.push("/my-page")
-      }, 2000)
-    }, 1500)
+      await widgets.requestPayment({
+        orderId: generateRandomString(), // 고유 주문 번호
+        orderName: course.title,
+        successUrl: window.location.origin + "/widget/success", // 결제 요청이 성공하면 리다이렉트되는 URL
+        failUrl: window.location.origin + "/fail", // 결제 요청이 실패하면 리다이렉트되는 URL
+        customerEmail: "customer123@gmail.com",
+        customerName: "김토스",
+        // 가상계좌 안내, 퀵계좌이체 휴대폰 번호 자동 완성에 사용되는 값입니다. 필요하다면 주석을 해제해 주세요.
+        // customerMobilePhone: "01012341234",
+      });
+
+
+    }catch(error){
+      console.error("Error processing payment:", error);
+    }finally{
+      setIsProcessing(false);
+    }
+  }
+
+  if(isLoading){
+    return <PaymentPageSkeleton />
   }
 
   if (!course) {
@@ -149,16 +223,16 @@ function PaymentPageContent() {
             <CardContent className="space-y-6">
               {/* Selected Course */}
               <div className="flex gap-4 items-start">
-                <div className="w-24 h-24 rounded-md overflow-hidden flex-shrink-0">
+                <div className="w-30 h-24 rounded-md overflow-hidden flex-shrink-0">
                   <img
-                    src={course.image || "/placeholder.svg"}
+                    src={course.image_url || "/placeholder.svg"}
                     alt={course.title}
                     className="w-full h-full object-cover"
                   />
                 </div>
                 <div>
                   <h3 className="font-semibold text-lg">{course.title}</h3>
-                  <p className="text-sm text-muted-foreground mb-1">강사: {course.instructor}</p>
+                  <p className="text-sm text-muted-foreground mb-1">강사: 송이삭</p>
                   <div className="flex items-center text-sm text-primary">
                     <BookOpen className="h-4 w-4 mr-1" />
                     <span>전체 강의 접근 권한</span>
@@ -169,18 +243,9 @@ function PaymentPageContent() {
               <Separator />
 
               {/* Payment Method */}
-              <div>
-                <h3 className="font-semibold mb-4">결제 방법</h3>
-                <div className="border rounded-md p-4 bg-muted/30 flex items-center gap-3">
-                  <div className="w-10 h-10 bg-[#0064FF] rounded-md flex items-center justify-center">
-                    <CreditCard className="h-5 w-5 text-white" />
-                  </div>
-                  <div>
-                    <p className="font-medium">토스페이</p>
-                    <p className="text-sm text-muted-foreground">빠르고 안전한 결제</p>
-                  </div>
-                </div>
-              </div>
+              <div id="payment-method" />
+              {/* Agreements */}
+              <div id="agreement" />
 
               <Separator />
 
@@ -256,14 +321,14 @@ function PaymentPageContent() {
             <CardContent className="space-y-4">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">강의 가격</span>
-                <span>₩{Math.round(course.price * 1350).toLocaleString()}</span>
+                <span>₩{Math.round(course.price).toLocaleString()}</span>
               </div>
 
               <Separator />
 
               <div className="flex justify-between font-semibold text-lg">
                 <span>총액</span>
-                <span>₩{Math.round(course.price * 1350).toLocaleString()}</span>
+                <span>₩{Math.round(course.price).toLocaleString()}</span>
               </div>
 
               <div className="text-sm text-muted-foreground">

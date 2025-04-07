@@ -216,7 +216,7 @@ function CourseCard({ course }) {
 
       <CardFooter>
         <Button className="w-full" asChild>
-          <Link href={`/courses/${course.id}/lectures/l1`}>
+          <Link href={`/courses/${course.id}`}>
             <BookOpen className="mr-2 h-4 w-4" /> 강의 보기
           </Link>
         </Button>

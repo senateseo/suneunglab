@@ -1,8 +1,10 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { BookOpen, BarChart, Users, Calendar, ArrowRight } from "lucide-react"
+import { useAuth } from "../contexts/auth-context"
 
 export default function HomePage() {
+
   return (
     <div className="flex flex-col min-h-screen">
       {/* Hero Section */}
@@ -14,12 +16,10 @@ export default function HomePage() {
               최고의 강사진과 함께하는 체계적인 수능 대비 학습 플랫폼으로 여러분의 대학 입시를 준비하세요.
             </p>
             <div className="flex flex-wrap gap-4">
-              <Button size="lg" asChild>
+              <Button size="lg" asChild className="border border-white">
                 <Link href="/courses">강의 둘러보기</Link>
               </Button>
-              <Button size="lg" variant="outline" className="bg-primary-foreground text-primary" asChild>
-                <Link href="/auth/login">로그인</Link>
-              </Button>
+
             </div>
           </div>
         </div>
@@ -76,7 +76,7 @@ export default function HomePage() {
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="mb-6 md:mb-0">
               <h3 className="text-xl font-bold">수능연구소</h3>
-              <p className="text-muted-foreground">© 2025 모든 권리 보유</p>
+              <p className="text-muted-foreground">© 2025 </p>
             </div>
             <div className="flex gap-8">
               <Link href="/about" className="text-muted-foreground hover:text-foreground">
@@ -91,6 +91,17 @@ export default function HomePage() {
               <Link href="/terms" className="text-muted-foreground hover:text-foreground">
                 이용약관
               </Link>
+            </div>
+          </div>
+          
+          <div className="mt-8 pt-6 border-t border-muted text-xs text-muted-foreground">
+            <div className="flex flex-wrap gap-x-4 gap-y-1 justify-center">
+              <span>상호: 정직과 신뢰</span>
+              <span>사업자 등록 번호: 515-11-07811</span>
+              <span>대표: 송이삭</span>
+              <span>통신판매업신고번호: 2021-용인수지-1155</span>
+              <span>사업장주소: 경기도 용신시 수지구 고기로 89, 103동 1705호</span>
+              <span>유선전화번호: 010-3176-6450</span>
             </div>
           </div>
         </div>

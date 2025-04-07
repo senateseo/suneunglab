@@ -235,7 +235,7 @@ export default function CoursePage() {
                 <CardContent className="p-6">
                   <div className="mb-6">
                     <div className="text-3xl font-bold mb-2">
-                      {course.price ? `₩${Math.round(course.price * 1350).toLocaleString()}` : "무료"}
+                      {course.price ? `₩${Math.round(course.price).toLocaleString()}` : "무료"}
                     </div>
                     <p className="text-muted-foreground">이 강의에 대한 전체 액세스</p>
                   </div>

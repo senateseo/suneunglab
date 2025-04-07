@@ -97,7 +97,7 @@ export default function HomePage() {
           <div className="mt-8 pt-6 border-t border-muted text-xs text-muted-foreground">
             <div className="flex flex-wrap gap-x-4 gap-y-1 justify-center">
               <span>상호: 정직과 신뢰</span>
-              <span>사업자 등록 번호: 515-11-07811</span>
+              <span>사업자 등록 번호: 515-11-07817</span>
               <span>대표: 송이삭</span>
               <span>통신판매업신고번호: 2021-용인수지-1155</span>
               <span>사업장주소: 경기도 용신시 수지구 고기로 89, 103동 1705호</span>

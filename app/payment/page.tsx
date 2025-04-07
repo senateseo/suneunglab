@@ -35,12 +35,15 @@ const clientKey:any = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY;
 // 실제 결제 페이지 컴포넌트
 function PaymentPageContent() {
 
+  function generateRandomString() {
+    if (typeof window !== 'undefined') {
+      return window.btoa(Math.random().toString()).slice(0, 20);
+    }
+    // Fallback for server-side
+    return Math.random().toString(36).substring(2, 22);
+  }
 
-function generateRandomString() {
-  return window.btoa(Math.random().toString()).slice(0, 20);
-}
-
-  const customerKey = generateRandomString();
+  const customerKey = typeof window !== 'undefined' ? generateRandomString() : '';
   const searchParams = useSearchParams()
   const router = useRouter()
   const courseId = searchParams.get("courseId") || "1"
@@ -62,23 +65,26 @@ function generateRandomString() {
   const [widgets, setWidgets]:any = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    async function fetchCourse() {
-      setIsLoading(true);
-      try {
-        const response = await fetch(`/api/courses/${courseId}`);
-        const data = await response.json();
-        setCourse(data);
-      } catch (error) {
-        console.error("Error fetching course:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-    fetchCourse();
-  }, [courseId]);
+  // useEffect(() => {
+  //   async function fetchCourse() {
+  //     setIsLoading(true);
+  //     try {
+  //       const response = await fetch(`/api/courses/${courseId}`);
+  //       const data = await response.json();
+  //       setCourse(data);
+  //     } catch (error) {
+  //       console.error("Error fetching course:", error);
+  //     } finally {
+  //       setIsLoading(false);
+  //     }
+  //   }
+  //   fetchCourse();
+  // }, [courseId]);
 
   useEffect(() => {
+
+
+
     async function fetchPaymentWidgets() {
       try {
         const tossPayments = await loadTossPayments(clientKey);
@@ -96,14 +102,32 @@ function generateRandomString() {
         console.error("Error fetching payment widget:", error);
       }
     }
+    
     fetchPaymentWidgets();
   }, [courseId]);
 
   useEffect(() => {
+
+    async function fetchCourse() {
+      setIsLoading(true);
+      try {
+        const response = await fetch(`/api/courses/${courseId}`);
+        const data = await response.json();
+        setCourse(data);
+      } catch (error) {
+        console.error("Error fetching course:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+
     async function renderPaymentWidgets() {
       if (widgets == null) {
         return;
       }
+
+      await fetchCourse();
 
       // ------  주문서의 결제 금액 설정 ------
       // TODO: 위젯의 결제금액을 결제하려는 금액으로 초기화하세요.
@@ -151,12 +175,13 @@ function generateRandomString() {
     setIsProcessing(true)
 
     try {
-
+      const origin = typeof window !== 'undefined' ? window.location.origin : '';
+      
       await widgets.requestPayment({
         orderId: generateRandomString(), // 고유 주문 번호
         orderName: course.title,
-        successUrl: window.location.origin + "/widget/success", // 결제 요청이 성공하면 리다이렉트되는 URL
-        failUrl: window.location.origin + "/fail", // 결제 요청이 실패하면 리다이렉트되는 URL
+        successUrl: origin + "/widget/success", // 결제 요청이 성공하면 리다이렉트되는 URL
+        failUrl: origin + "/fail", // 결제 요청이 실패하면 리다이렉트되는 URL
         customerEmail: "customer123@gmail.com",
         customerName: "김토스",
         // 가상계좌 안내, 퀵계좌이체 휴대폰 번호 자동 완성에 사용되는 값입니다. 필요하다면 주석을 해제해 주세요.
@@ -171,20 +196,6 @@ function generateRandomString() {
     }
   }
 
-  if(isLoading){
-    return <PaymentPageSkeleton />
-  }
-
-  if (!course) {
-    return (
-      <div className="max-w-7xl mx-auto px-4 py-12 text-center">
-        <h1 className="text-2xl font-bold mb-4">강의를 찾을 수 없습니다</h1>
-        <Button asChild>
-          <Link href="/courses">강의 둘러보기</Link>
-        </Button>
-      </div>
-    )
-  }
 
   if (paymentComplete) {
     return (
@@ -206,11 +217,13 @@ function generateRandomString() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-12">
-      <Button variant="ghost" className="mb-6 pl-0 flex items-center gap-2" onClick={handleCancel}>
-        <ArrowLeft className="h-4 w-4" />
-        강의로 돌아가기
-      </Button>
+    <>
+      (
+        <div className="max-w-7xl mx-auto px-4 py-12">
+          <Button variant="ghost" className="mb-6 pl-0 flex items-center gap-2" onClick={handleCancel}>
+            <ArrowLeft className="h-4 w-4" />
+            강의로 돌아가기
+          </Button>
 
       <div className="grid md:grid-cols-3 gap-8">
         <div className="md:col-span-2">
@@ -222,6 +235,9 @@ function generateRandomString() {
 
             <CardContent className="space-y-6">
               {/* Selected Course */}
+              {
+                course && (
+              
               <div className="flex gap-4 items-start">
                 <div className="w-30 h-24 rounded-md overflow-hidden flex-shrink-0">
                   <img
@@ -239,6 +255,8 @@ function generateRandomString() {
                   </div>
                 </div>
               </div>
+              )
+              }
 
               <Separator />
 
@@ -313,6 +331,8 @@ function generateRandomString() {
         </div>
 
         {/* Order Summary */}
+        {
+          course && (
         <div className="md:col-span-1">
           <Card>
             <CardHeader>
@@ -337,8 +357,13 @@ function generateRandomString() {
             </CardContent>
           </Card>
         </div>
+        )
+        }
       </div>
     </div>
+      )
+    
+    </> 
   )
 }
 

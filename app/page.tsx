@@ -539,7 +539,7 @@ export default function HomePage() {
       ))}
 
       {/* Footer with mobile optimization */}
-      <footer className="bg-background border-t py-8 md:py-12 w-full snap-start">
+      <footer className="bg-background border-t py-8 md:py-12 w-full">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="mb-6 md:mb-0">

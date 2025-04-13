@@ -2,7 +2,6 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect } from "react";
 
 const AnimatedSection = dynamic(() => import("@/components/animated-section"), {
   loading: () => (
@@ -19,12 +18,5 @@ export default function ClientSectionWrapper({
   section: any;
   index: number;
 }) {
-  useEffect(() => {
-    if (index === 0) {
-      console.log("SCROLLING TO TOP");
-      window.scrollTo(0, 0);
-    }
-  }, [index]);
-
   return <AnimatedSection section={section} index={index} />;
 }

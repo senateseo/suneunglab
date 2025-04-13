@@ -1,9 +1,24 @@
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Progress } from "@/components/ui/progress"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { BookOpen, Calendar, CheckCircle2, Clock, GraduationCap, BarChart, Award, Bell } from "lucide-react"
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  BookOpen,
+  Calendar,
+  CheckCircle2,
+  Clock,
+  GraduationCap,
+  BarChart,
+  Award,
+  Bell,
+} from "lucide-react";
 
 // Mock data for enrolled courses
 const enrolledCourses = [
@@ -31,7 +46,7 @@ const enrolledCourses = [
     image: "/placeholder.svg?height=100&width=200",
     lastAccessed: "3일 전",
   },
-]
+];
 
 // Mock data for upcoming deadlines
 const upcomingDeadlines = [
@@ -50,7 +65,7 @@ const upcomingDeadlines = [
     assignment: "어휘 테스트",
     dueDate: "다음 월요일",
   },
-]
+];
 
 // Mock data for recent announcements
 const recentAnnouncements = [
@@ -64,7 +79,7 @@ const recentAnnouncements = [
     message: "새로운 연습 문제가 추가되었습니다. 확인해보세요!",
     date: "2일 전",
   },
-]
+];
 
 export default function DashboardPage() {
   return (
@@ -72,7 +87,9 @@ export default function DashboardPage() {
       <div className="flex flex-col md:flex-row justify-between items-start mb-8 gap-4">
         <div>
           <h1 className="text-3xl font-bold mb-2">Student Dashboard</h1>
-          <p className="text-muted-foreground">Welcome back! Here's an overview of your learning progress.</p>
+          <p className="text-muted-foreground">
+            Welcome back! Here's an overview of your learning progress.
+          </p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" className="relative">
@@ -92,24 +109,35 @@ export default function DashboardPage() {
       <div className="grid md:grid-cols-3 gap-6 mb-8">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Courses Enrolled</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Courses Enrolled
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center">
               <BookOpen className="h-5 w-5 text-primary mr-2" />
-              <span className="text-2xl font-bold">{enrolledCourses.length}</span>
+              <span className="text-2xl font-bold">
+                {enrolledCourses.length}
+              </span>
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Average Progress</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Average Progress
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center">
               <BarChart className="h-5 w-5 text-primary mr-2" />
               <span className="text-2xl font-bold">
-                {Math.round(enrolledCourses.reduce((acc, course) => acc + course.progress, 0) / enrolledCourses.length)}
+                {Math.round(
+                  enrolledCourses.reduce(
+                    (acc, course) => acc + course.progress,
+                    0
+                  ) / enrolledCourses.length
+                )}
                 %
               </span>
             </div>
@@ -117,7 +145,9 @@ export default function DashboardPage() {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Certificates Earned</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Certificates Earned
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center">
@@ -149,20 +179,26 @@ export default function DashboardPage() {
                     />
                   </div>
                   <div className="p-6 md:w-3/4">
-                    <h3 className="font-semibold text-lg mb-2">{course.title}</h3>
+                    <h3 className="font-semibold text-lg mb-2">
+                      {course.title}
+                    </h3>
                     <div className="flex flex-col md:flex-row justify-between mb-4">
                       <div className="flex items-center text-sm text-muted-foreground mb-2 md:mb-0">
                         <Clock className="h-4 w-4 mr-1" />
                         <span>Last accessed {course.lastAccessed}</span>
                       </div>
                       <div className="flex items-center text-sm">
-                        <span className="font-medium">{course.progress}% complete</span>
+                        <span className="font-medium">
+                          {course.progress}% complete
+                        </span>
                       </div>
                     </div>
                     <Progress value={course.progress} className="h-2 mb-4" />
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
                       <div>
-                        <p className="text-sm text-muted-foreground mb-1">Next up:</p>
+                        <p className="text-sm text-muted-foreground mb-1">
+                          Next up:
+                        </p>
                         <div className="flex items-center">
                           <PlayCircle className="h-4 w-4 text-primary mr-2" />
                           <span>{course.nextLesson}</span>
@@ -192,11 +228,15 @@ export default function DashboardPage() {
                 <div className="flex justify-between items-start">
                   <div>
                     <h3 className="font-medium">{deadline.assignment}</h3>
-                    <p className="text-sm text-muted-foreground">{deadline.course}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {deadline.course}
+                    </p>
                   </div>
                   <div className="flex items-center">
                     <Calendar className="h-4 w-4 text-primary mr-2" />
-                    <span className="text-sm font-medium">{deadline.dueDate}</span>
+                    <span className="text-sm font-medium">
+                      {deadline.dueDate}
+                    </span>
                   </div>
                 </div>
               </CardContent>
@@ -210,8 +250,12 @@ export default function DashboardPage() {
             <Card key={index}>
               <CardContent className="p-4">
                 <div className="mb-2">
-                  <span className="text-sm font-medium">{announcement.course}</span>
-                  <span className="text-xs text-muted-foreground ml-2">{announcement.date}</span>
+                  <span className="text-sm font-medium">
+                    {announcement.course}
+                  </span>
+                  <span className="text-xs text-muted-foreground ml-2">
+                    {announcement.date}
+                  </span>
                 </div>
                 <p>{announcement.message}</p>
               </CardContent>
@@ -228,7 +272,9 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="h-[200px] flex items-center justify-center border rounded-md bg-muted/50">
-              <p className="text-muted-foreground">Learning activity chart would appear here</p>
+              <p className="text-muted-foreground">
+                Learning activity chart would appear here
+              </p>
             </div>
           </CardContent>
         </Card>
@@ -236,7 +282,9 @@ export default function DashboardPage() {
         <Card>
           <CardHeader>
             <CardTitle>Achievements</CardTitle>
-            <CardDescription>Badges and milestones you've earned</CardDescription>
+            <CardDescription>
+              Badges and milestones you've earned
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-3 gap-4 text-center">
@@ -263,10 +311,9 @@ export default function DashboardPage() {
         </Card>
       </div>
     </div>
-  )
+  );
 }
 
-function PlayCircle({ className }) {
-  return <Clock className={className} />
+function PlayCircle({ className }: { className: string }) {
+  return <Clock className={className} />;
 }
-

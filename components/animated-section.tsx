@@ -2,7 +2,6 @@
 
 import { motion } from "framer-motion";
 import Image from "next/image";
-import { useInView } from "react-intersection-observer";
 
 // Section component with animations
 export default function AnimatedSection({
@@ -12,12 +11,6 @@ export default function AnimatedSection({
   section: any;
   index: number;
 }) {
-  const [ref, inView] = useInView({
-    triggerOnce: true,
-    threshold: 0.2,
-    rootMargin: "-10% 0px",
-  });
-
   // Get correct image paths based on section ID
   const getImagePath = (sectionId: string, index: number) => {
     if (sectionId === "testimonials") {
@@ -40,7 +33,6 @@ export default function AnimatedSection({
 
   return (
     <div
-      ref={ref}
       key={section.id}
       className="min-h-screen w-full flex flex-col justify-center items-center px-4"
     >
@@ -56,9 +48,8 @@ export default function AnimatedSection({
                 <motion.div
                   key={`img-${imgIndex}`}
                   initial={{ opacity: 0 }}
-                  animate={inView ? { opacity: 1 } : { opacity: 0 }}
+                  animate={{ opacity: 1 }}
                   transition={{
-                    delay: inView ? Math.min(0.3 + imgIndex * 0.2, 1) : 0,
                     duration: 0.4,
                   }}
                   className="my-6 md:my-8"
@@ -80,10 +71,10 @@ export default function AnimatedSection({
           <motion.div
             key={i}
             initial="hidden"
-            animate={inView ? "visible" : "hidden"}
+            animate="visible"
             variants={fadeInVariant}
             transition={{
-              delay: inView ? Math.min(i * 0.08, 1) : 0,
+              delay: Math.min(i * 0.08, 1),
               duration: 0.4,
             }}
             className="text-xl md:text-2xl leading-relaxed text-gray-800 my-1 md:my-2"

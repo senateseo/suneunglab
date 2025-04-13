@@ -42,7 +42,7 @@ export default function AnimatedSection({
     <div
       ref={ref}
       key={section.id}
-      className="min-h-screen w-full flex flex-col justify-center items-center py-10 md:py-20 snap-start px-4"
+      className="min-h-screen w-full flex flex-col justify-center items-center px-4"
     >
       <div className="w-full max-w-xl md:max-w-3xl mx-auto px-2 md:px-4 text-center">
         {section.hasImage && (

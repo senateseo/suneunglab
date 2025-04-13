@@ -162,10 +162,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         clearTimeout(authCheckTimeoutRef.current);
         authCheckTimeoutRef.current = null;
       }
-
-      if (authListener && authListener.subscription) {
-        authListener.subscription.unsubscribe();
-      }
     };
   }, []);
 

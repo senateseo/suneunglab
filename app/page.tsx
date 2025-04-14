@@ -590,7 +590,7 @@ export default function HomePage() {
       </footer>
 
       {/* Floating bottom bar */}
-      <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 w-full px-4">
+      {/* <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 w-full px-4">
         <div className="max-w-7xl mx-auto bg-background border rounded-lg shadow-md py-3 px-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
@@ -608,7 +608,7 @@ export default function HomePage() {
             </Button>
           </div>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 }

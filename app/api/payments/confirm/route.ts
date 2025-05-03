@@ -2,7 +2,10 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
 // Get your secret keys from environment variables for security
-const widgetSecretKey = process.env.NEXT_PUBLIC_TOSS_PAYMENTS_WIDGET_SECRET_KEY!;
+const widgetSecretKey =
+  process.env.NODE_ENV === "production"
+    ? process.env.NEXT_PUBLIC_TOSS_PAYMENTS_WIDGET_SECRET_KEY_PROD
+    : process.env.NEXT_PUBLIC_TOSS_PAYMENTS_WIDGET_SECRET_KEY_DEV;
 
 // Initialize Supabase client
 const supabase = createClient(

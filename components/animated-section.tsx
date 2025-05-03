@@ -33,7 +33,7 @@ export default function AnimatedSection({
 
   return (
     <div
-      key={section.id}
+      key={index}
       className="min-h-screen w-full flex flex-col justify-center items-center px-4"
     >
       <div className="w-full max-w-xl md:max-w-3xl mx-auto px-2 md:px-4 text-center">

@@ -12,9 +12,8 @@ export default function HomePage() {
         "고정 1등급이라면",
         "조용히 뒤로가기를 눌러주시고,",
         "",
-        <>
-          <span className="font-bold">만약 90점 이하 학생이라면,</span>
-        </>,
+
+        <span className="font-bold">만약 90점 이하 학생이라면,</span>,
         <>
           <span className="text-red-500 font-bold">딱 3분만 </span>
           <span>시간을 내어</span>
@@ -147,7 +146,7 @@ export default function HomePage() {
         </>,
         "",
         "만약 여러분이 영어를 감으로 풀고 있는데,",
-        "특별히 국어 능력이 좋지 않은 이상,",
+        "특별히 국어 능력이 좋지 않다면",
         "",
         <>
           <p>
@@ -162,11 +161,11 @@ export default function HomePage() {
         "",
         "저는 학창 시절",
         "고등학교 3년 내내",
-        <>
-          <p className="font-bold underline">
-            3등급 이하를 받아본 적이 없습니다.
-          </p>
-        </>,
+        "아무리 못해도",
+
+        <p className="font-bold underline">
+          2등급 밑으로 떨어져 본 적이 없습니다
+        </p>,
         "",
         "그리고 수능 날 굳게 믿었던 과목인",
         <>
@@ -417,12 +416,12 @@ export default function HomePage() {
       ],
       hasImage: false,
     },
-    {
-      id: "testimonials",
-      content: [],
-      hasImage: true,
-      imageCount: 4,
-    },
+    // {
+    //   id: "testimonials",
+    //   content: [],
+    //   hasImage: true,
+    //   imageCount: 4,
+    // },
     {
       id: "advice",
       content: [
@@ -508,8 +507,7 @@ export default function HomePage() {
         </>,
         "성적이 오르지 않았다면",
         <>
-          <span className=" font-bold">수강료의 1,000%</span>를
-          돌려드리겠습니다.
+          <span className=" font-bold">수강료의 100%</span>를 돌려드리겠습니다.
         </>,
         "",
         <span className="font-bold">그럼 준비되셨나요?</span>,

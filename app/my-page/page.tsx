@@ -3,13 +3,12 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Clock, Loader, PlayCircle } from "lucide-react";
-import { Course } from "@/types/course"; // Assuming you have a Course type, adjust if needed
+import { Loader } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useAuth } from "../../contexts/auth-context";
 
 // Function to fetch enrolled courses
-async function getEnrolledCourses(userId: string): Promise<Course[]> {
+async function getEnrolledCourses(userId: string): Promise<any[]> {
   try {
     // Fetch data from the new API endpoint
     // Note: Using a relative path works because this fetch runs server-side in Next.js
@@ -32,7 +31,7 @@ async function getEnrolledCourses(userId: string): Promise<Course[]> {
       return [];
     }
 
-    const courses: Course[] = await response.json();
+    const courses: any[] = await response.json();
     return courses;
   } catch (error) {
     console.error("Failed to fetch enrolled courses:", error);
@@ -43,7 +42,7 @@ async function getEnrolledCourses(userId: string): Promise<Course[]> {
 // Make the component async
 export default function MyLecturesPage() {
   const { user } = useAuth();
-  const [enrolledCourses, setEnrolledCourses] = useState<Course[]>([]);
+  const [enrolledCourses, setEnrolledCourses] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {

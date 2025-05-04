@@ -21,7 +21,7 @@ interface ExtendedAuthUser extends AuthUser {
 }
 
 interface AuthContextType {
-  user: ExtendedAuthUser | null;
+  user: any | null;
   isLoading: boolean;
   signUp: (email: string, password: string, name: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
@@ -63,9 +63,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             safeSetState(setUser, null);
           }
         }, 15000);
-
-        // 먼저 세션 복구 시도
-        const sessionResult = await recoverSession();
 
         if (!isMountedRef.current) return;
 

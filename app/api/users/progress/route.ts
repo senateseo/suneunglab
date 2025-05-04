@@ -10,18 +10,14 @@ const supabase = createClient(
 
 export async function GET(request: Request) {
   try {
-    // 현재 로그인한 사용자 정보 가져오기
-    const user = await getCurrentUser()
-    if (!user) {
-      return NextResponse.json({ error: "인증되지 않은 사용자입니다." }, { status: 401 })
-    }
 
     // URL에서 쿼리 파라미터 추출
     const { searchParams } = new URL(request.url)
     const courseId = searchParams.get("courseId")
+    const userId = searchParams.get("userId")
 
     // 쿼리 빌드
-    let query = supabase.from("lecture_progress").select("*").eq("user_id", user.id)
+    let query = supabase.from("lecture_progress").select("*").eq("user_id", userId)
 
     // courseId 파라미터가 있으면 필터링
     if (courseId) {
@@ -62,14 +58,10 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    // 현재 로그인한 사용자 정보 가져오기
-    const user = await getCurrentUser()
-    if (!user) {
-      return NextResponse.json({ error: "인증되지 않은 사용자입니다." }, { status: 401 })
-    }
+  
 
     // 요청 본문에서 데이터 가져오기
-    const { lectureId, completed } = await request.json()
+    const { lectureId, completed, userId} = await request.json()
 
     if (!lectureId) {
       return NextResponse.json({ error: "강의 ID가 필요합니다." }, { status: 400 })
@@ -79,7 +71,7 @@ export async function POST(request: Request) {
     const { data: existingProgress, error: checkError } = await supabase
       .from("lecture_progress")
       .select("*")
-      .eq("user_id", user.id)
+      .eq("user_id", userId)
       .eq("lecture_id", lectureId)
       .single()
 
@@ -115,7 +107,7 @@ export async function POST(request: Request) {
         .from("lecture_progress")
         .insert([
           {
-            user_id: user.id,
+            user_id: userId,
             lecture_id: lectureId,
             completed: completed,
             last_accessed: new Date().toISOString(),

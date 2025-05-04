@@ -74,7 +74,7 @@ export async function signOut() {
 }
 
 // 현재 사용자 가져오기
-export async function getCurrentUser(): Promise<AuthUser | null> {
+export async function getCurrentUser(): Promise<any | null> {
   try {
     console.log("getCurrentUser: 사용자 정보 요청 시작")
     const startTime = Date.now()
@@ -108,13 +108,22 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
     }
 
     const user = data.user
-    console.log("getCurrentUser: 사용자 정보 반환", user)
+
+
+    // 사용자가 등록한 강의들도 가져오기
+    const { data: enrollments, error: enrollmentsError } = await supabase
+      .from("enrollments")
+      .select("*")
+      .eq("user_id", user.id)
+
+    console.log("getCurrentUser: 등록한 강의들", enrollments)
 
     return {
       id: user.id,
       email: user.email || "",
       name: user.user_metadata?.name,
       avatar_url: user.user_metadata?.avatar_url,
+      enrollments: enrollments,
     }
   } catch (error) {
     console.error("Error getting current user:", error)

@@ -1,52 +1,74 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useParams } from "next/navigation"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Card, CardContent } from "@/components/ui/card"
-import { Clock, Users, BookOpen, CheckCircle2, PlayCircle, FileText, MessageSquare, Award } from "lucide-react"
-import { useToast } from "@/components/ui/use-toast"
+import { useState, useEffect } from "react";
+import { useParams } from "next/navigation";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  Clock,
+  BookOpen,
+  CheckCircle2,
+  PlayCircle,
+  FileText,
+  MessageSquare,
+  Award,
+} from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
+import { useAuth } from "../../../contexts/auth-context";
 
 export default function CoursePage() {
-  const params = useParams()
-  const courseId = params.courseId
-  const [course, setCourse] = useState(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const { toast } = useToast()
+  const { user } = useAuth();
+
+  const params = useParams();
+  const courseId = params.courseId;
+  const [course, setCourse] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isEnrolled, setIsEnrolled] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
-    fetchCourse()
-  }, [courseId])
+    fetchCourse();
+  }, [courseId]);
+
+  useEffect(() => {
+    if (user) {
+      setIsEnrolled(
+        user.enrollments.some(
+          (enrollment: any) => enrollment.course_id === courseId
+        )
+      );
+    }
+  }, [user, courseId]);
 
   async function fetchCourse() {
     try {
-      setIsLoading(true)
-      console.log("코스 상세 페이지: 강의 정보 가져오기 시작", { courseId })
+      setIsLoading(true);
 
       // 서버 API를 통해 강의 상세 정보 가져오기
-      const response = await fetch(`/api/admin/courses/${courseId}`)
+      const response = await fetch(`/api/admin/courses/${courseId}`);
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || "강의 정보를 가져오는 중 오류가 발생했습니다.")
+        const errorData = await response.json();
+        throw new Error(
+          errorData.error || "강의 정보를 가져오는 중 오류가 발생했습니다."
+        );
       }
 
-      const data = await response.json()
-      console.log("코스 상세 페이지: 강의 정보 가져오기 성공", data)
+      const data = await response.json();
 
-      setCourse(data)
+      setCourse(data);
     } catch (error) {
-      console.error("Error fetching course:", error)
+      console.error("Error fetching course:", error);
       toast({
         title: "오류 발생",
         description: "강의 정보를 불러오는 중 오류가 발생했습니다.",
         variant: "destructive",
-      })
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
   }
 
@@ -72,11 +94,15 @@ export default function CoursePage() {
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   if (!course) {
-    return <div className="container mx-auto px-4 py-12">강의를 찾을 수 없습니다</div>
+    return (
+      <div className="container mx-auto px-4 py-12">
+        강의를 찾을 수 없습니다
+      </div>
+    );
   }
 
   return (
@@ -90,33 +116,34 @@ export default function CoursePage() {
                 <Badge variant="outline">{course.level}</Badge>
               </div>
 
-              <h1 className="text-3xl md:text-4xl font-bold mb-4">{course.title}</h1>
-              <p className="text-lg text-muted-foreground mb-6">{course.long_description || course.description}</p>
+              <h1 className="text-3xl md:text-4xl font-bold mb-4">
+                {course.title}
+              </h1>
+              <p className="text-lg text-muted-foreground mb-6">
+                {course.long_description || course.description}
+              </p>
 
               <div className="flex flex-wrap gap-6 mb-6">
                 <div className="flex items-center gap-2">
                   <Clock className="h-5 w-5 text-muted-foreground" />
                   <span>{course.duration}</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Users className="h-5 w-5 text-muted-foreground" />
-                  <span>{(course.enrolled || 0).toLocaleString()}명 수강 중</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Award className="h-5 w-5 text-muted-foreground" />
-                  <span>수료증 발급</span>
-                </div>
               </div>
 
               <div className="flex items-center gap-4 mb-8">
                 <img
-                  src={course.instructor.avatar || "/placeholder.svg?height=100&width=100"}
+                  src={
+                    course.instructor.avatar ||
+                    "/placeholder.svg?height=100&width=100"
+                  }
                   alt={course.instructor.name}
                   className="w-12 h-12 rounded-full"
                 />
                 <div>
                   <h3 className="font-medium">{course.instructor.name}</h3>
-                  <p className="text-sm text-muted-foreground">{course.instructor.title}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {course.instructor.title}
+                  </p>
                 </div>
               </div>
             </div>
@@ -154,7 +181,9 @@ export default function CoursePage() {
                                   <span>{lesson.title}</span>
                                 </div>
                                 {lesson.duration && (
-                                  <span className="text-sm text-muted-foreground">{lesson.duration}</span>
+                                  <span className="text-sm text-muted-foreground">
+                                    {lesson.duration}
+                                  </span>
                                 )}
                               </div>
                             ))
@@ -170,7 +199,9 @@ export default function CoursePage() {
                 ) : (
                   <Card>
                     <CardContent className="p-6 text-center">
-                      <p className="text-muted-foreground">이 강의에는 아직 모듈이 없습니다.</p>
+                      <p className="text-muted-foreground">
+                        이 강의에는 아직 모듈이 없습니다.
+                      </p>
                     </CardContent>
                   </Card>
                 )}
@@ -189,16 +220,25 @@ export default function CoursePage() {
                       ))}
                     </ul>
 
-                    <h3 className="text-xl font-semibold mt-8 mb-4">강사 소개</h3>
+                    <h3 className="text-xl font-semibold mt-8 mb-4">
+                      강사 소개
+                    </h3>
                     <div className="flex items-start gap-4">
                       <img
-                        src={course.instructor.avatar || "/placeholder.svg?height=100&width=100"}
+                        src={
+                          course.instructor.avatar ||
+                          "/placeholder.svg?height=100&width=100"
+                        }
                         alt={course.instructor.name}
                         className="w-16 h-16 rounded-full"
                       />
                       <div>
-                        <h4 className="font-medium">{course.instructor.name}</h4>
-                        <p className="text-sm text-muted-foreground mb-2">{course.instructor.title}</p>
+                        <h4 className="font-medium">
+                          {course.instructor.name}
+                        </h4>
+                        <p className="text-sm text-muted-foreground mb-2">
+                          {course.instructor.title}
+                        </p>
                         <p>{course.instructor.bio}</p>
                       </div>
                     </div>
@@ -215,7 +255,9 @@ export default function CoursePage() {
                     </div>
 
                     <div className="text-center py-8">
-                      <p className="text-muted-foreground mb-4">토론에 참여하려면 이 강의에 등록해야 합니다.</p>
+                      <p className="text-muted-foreground mb-4">
+                        토론에 참여하려면 이 강의에 등록해야 합니다.
+                      </p>
                       <Button>토론 참여를 위해 등록하기</Button>
                     </div>
                   </CardContent>
@@ -228,22 +270,34 @@ export default function CoursePage() {
             <div className="sticky top-6">
               <Card className="overflow-hidden">
                 <img
-                  src={course.image_url || "/placeholder.svg?height=400&width=800"}
+                  src={
+                    course.image_url || "/placeholder.svg?height=400&width=800"
+                  }
                   alt={course.title}
                   className="w-full h-48 object-cover"
                 />
                 <CardContent className="p-6">
                   <div className="mb-6">
                     <div className="text-3xl font-bold mb-2">
-                      {course.price ? `₩${Math.round(course.price).toLocaleString()}` : "무료"}
+                      {course.price
+                        ? `₩${Math.round(course.price).toLocaleString()}`
+                        : "무료"}
                     </div>
-                    <p className="text-muted-foreground">이 강의에 대한 전체 액세스</p>
+                    <p className="text-muted-foreground">
+                      이 강의에 대한 전체 액세스
+                    </p>
                   </div>
 
                   <Button size="lg" className="w-full mb-4" asChild>
-                    <Link href={`/payment?courseId=${course.id}`}>
-                      <BookOpen className="mr-2 h-4 w-4" /> 지금 등록하기
-                    </Link>
+                    {isEnrolled ? (
+                      <Link href={`/courses/${courseId}/lectures`}>
+                        <BookOpen className="mr-2 h-4 w-4" /> 강의 보기
+                      </Link>
+                    ) : (
+                      <Link href={`/payment?courseId=${course.id}`}>
+                        <BookOpen className="mr-2 h-4 w-4" /> 지금 등록하기
+                      </Link>
+                    )}
                   </Button>
 
                   <div className="text-sm text-muted-foreground">
@@ -253,8 +307,11 @@ export default function CoursePage() {
                         <PlayCircle className="h-4 w-4" />
                         <span>
                           {course.modules.reduce(
-                            (total, module) => total + (module.lessons?.filter((l) => l.type === "video").length || 0),
-                            0,
+                            (total, module) =>
+                              total +
+                              (module.lessons?.filter((l) => l.type === "video")
+                                .length || 0),
+                            0
                           ) || "다수"}
                           개의 비디오 강의
                         </span>
@@ -264,8 +321,11 @@ export default function CoursePage() {
                         <span>
                           {course.modules.reduce(
                             (total, module) =>
-                              total + (module.lessons?.filter((l) => l.type === "assignment").length || 0),
-                            0,
+                              total +
+                              (module.lessons?.filter(
+                                (l) => l.type === "assignment"
+                              ).length || 0),
+                            0
                           ) || "다수"}
                           개의 과제
                         </span>
@@ -274,8 +334,11 @@ export default function CoursePage() {
                         <CheckCircle2 className="h-4 w-4" />
                         <span>
                           {course.modules.reduce(
-                            (total, module) => total + (module.lessons?.filter((l) => l.type === "quiz").length || 0),
-                            0,
+                            (total, module) =>
+                              total +
+                              (module.lessons?.filter((l) => l.type === "quiz")
+                                .length || 0),
+                            0
                           ) || "다수"}
                           개의 퀴즈
                         </span>
@@ -302,7 +365,9 @@ export default function CoursePage() {
         <div className="max-w-7xl mx-auto bg-background border rounded-lg shadow-md py-3 px-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
-              <h3 className="font-semibold text-lg mr-4 truncate max-w-[200px] md:max-w-md">{course.title}</h3>
+              <h3 className="font-semibold text-lg mr-4 truncate max-w-[200px] md:max-w-md">
+                {course.title}
+              </h3>
               <div className="hidden md:flex items-center gap-4">
                 <Badge variant="outline">{course.level}</Badge>
                 <div className="flex items-center gap-1 text-sm text-muted-foreground">
@@ -312,14 +377,19 @@ export default function CoursePage() {
               </div>
             </div>
             <Button asChild>
-              <Link href={`/payment?courseId=${course.id}`}>
-                <BookOpen className="mr-2 h-4 w-4" /> 지금 등록하기
-              </Link>
+              {isEnrolled ? (
+                <Link href={`/courses/${courseId}/lectures`}>
+                  <BookOpen className="mr-2 h-4 w-4" /> 강의 보기
+                </Link>
+              ) : (
+                <Link href={`/payment?courseId=${course.id}`}>
+                  <BookOpen className="mr-2 h-4 w-4" /> 지금 등록하기
+                </Link>
+              )}
             </Button>
           </div>
         </div>
       </div>
     </>
-  )
+  );
 }
-

@@ -1,47 +1,100 @@
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Progress } from "@/components/ui/progress"
-import { Clock, PlayCircle } from "lucide-react"
+"use client";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { Clock, Loader, PlayCircle } from "lucide-react";
+import { Course } from "@/types/course"; // Assuming you have a Course type, adjust if needed
+import { useEffect, useState } from "react";
+import { useAuth } from "../../contexts/auth-context";
 
-// Mock data for enrolled courses
-const enrolledCourses = [
-  {
-    id: 1,
-    title: "수능 국어 완성",
-    progress: 65,
-    nextLesson: "비문학 독해 전략",
-    image: "/placeholder.svg?height=100&width=200",
-    lastAccessed: "2일 전",
-  },
-  {
-    id: 2,
-    title: "수능 수학 기초",
-    progress: 30,
-    nextLesson: "함수의 미분법",
-    image: "/placeholder.svg?height=100&width=200",
-    lastAccessed: "1주일 전",
-  },
-  {
-    id: 3,
-    title: "수능 영어 독해 전략",
-    progress: 10,
-    nextLesson: "장문 독해 방법",
-    image: "/placeholder.svg?height=100&width=200",
-    lastAccessed: "3일 전",
-  },
-]
+// Function to fetch enrolled courses
+async function getEnrolledCourses(userId: string): Promise<Course[]> {
+  try {
+    // Fetch data from the new API endpoint
+    // Note: Using a relative path works because this fetch runs server-side in Next.js
+    // You might need the full URL if fetching client-side or in different environments
+    const response = await fetch("/api/users/enrollments?userId=" + userId, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+    });
 
+    if (!response.ok) {
+      // Log the error for debugging
+      console.error(
+        `Error fetching enrolled courses: ${response.status} ${response.statusText}`
+      );
+      // You might want to return an empty array or throw an error
+      // depending on how you want to handle errors downstream
+      return [];
+    }
+
+    const courses: Course[] = await response.json();
+    return courses;
+  } catch (error) {
+    console.error("Failed to fetch enrolled courses:", error);
+    return []; // Return empty array on error
+  }
+}
+
+// Make the component async
 export default function MyLecturesPage() {
+  const { user } = useAuth();
+  const [enrolledCourses, setEnrolledCourses] = useState<Course[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (user) {
+      const fetchEnrolledCourses = async () => {
+        try {
+          setIsLoading(true);
+          const courses = await getEnrolledCourses(user.id);
+
+          console.log("ENROLLMENT API: 수강 강의 목록", { courses });
+          setEnrolledCourses(courses);
+        } catch (error) {
+          console.error("Failed to fetch enrolled courses:", error);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      fetchEnrolledCourses();
+    }
+  }, [user]);
+
+  // TODO: Add logic to fetch lastAccessed, progress, and nextLesson for each course.
+  // The current API only returns basic course info. You'll need to either:
+  // 1. Enhance the /api/users/enrollments endpoint to include this data.
+  // 2. Fetch progress data separately (e.g., from /api/users/progress) and merge it.
+  // For now, we'll use placeholders or default values.
+
+  const coursesWithDummyProgress = enrolledCourses.map((course) => ({
+    ...course,
+    progress: course.progress, // Placeholder
+    image: course.image_url || "/placeholder.svg", // Map image_url
+    id: course.id, // Ensure id is present
+  }));
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-full w-full">
+        <Loader className="h-6 w-6 animate-spin" />
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className="mb-6">
         <h1 className="text-3xl font-bold mb-2">내 강의</h1>
-        <p className="text-muted-foreground">중단한 부분부터 계속 학습하세요</p>
       </div>
 
       <div className="space-y-6">
-        {enrolledCourses.map((course) => (
+        {/* Use the fetched and processed data */}
+        {coursesWithDummyProgress.map((course) => (
           <Card key={course.id} className="overflow-hidden">
             <CardContent className="p-0">
               <div className="flex flex-col md:flex-row">
@@ -55,25 +108,23 @@ export default function MyLecturesPage() {
                 <div className="p-6 md:w-3/4">
                   <h3 className="font-semibold text-lg mb-2">{course.title}</h3>
                   <div className="flex flex-col md:flex-row justify-between mb-4">
-                    <div className="flex items-center text-sm text-muted-foreground mb-2 md:mb-0">
-                      <Clock className="h-4 w-4 mr-1" />
-                      <span>마지막 접속: {course.lastAccessed}</span>
-                    </div>
+                    <div className="flex items-center text-sm text-muted-foreground mb-2 md:mb-0"></div>
                     <div className="flex items-center text-sm">
-                      <span className="font-medium">{course.progress}% 완료</span>
+                      {/* Display placeholder or actual data */}
+                      <span className="font-medium">
+                        {course.progress}% 완료
+                      </span>
                     </div>
                   </div>
+                  {/* Use placeholder or actual data */}
                   <Progress value={course.progress} className="h-2 mb-4" />
                   <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
-                    <div>
-                      <p className="text-sm text-muted-foreground mb-1">다음 강의:</p>
-                      <div className="flex items-center">
-                        <PlayCircle className="h-4 w-4 text-primary mr-2" />
-                        <span>{course.nextLesson}</span>
-                      </div>
-                    </div>
+                    <div></div>
                     <Button className="mt-4 md:mt-0" asChild>
-                      <Link href={`/courses/${course.id}/lectures/l1`}>계속하기</Link>
+                      {/* Ensure the link uses the correct course ID */}
+                      <Link href={`/courses/${course.id}/lectures`}>
+                        강의보기
+                      </Link>
                     </Button>
                   </div>
                 </div>
@@ -82,9 +133,12 @@ export default function MyLecturesPage() {
           </Card>
         ))}
 
-        {enrolledCourses.length === 0 && (
+        {/* Use the fetched data length */}
+        {coursesWithDummyProgress.length === 0 && (
           <div className="text-center py-12">
-            <p className="text-muted-foreground mb-4">아직 등록한 강의가 없습니다.</p>
+            <p className="text-muted-foreground mb-4">
+              아직 등록한 강의가 없습니다.
+            </p>
             <Button asChild>
               <Link href="/courses">강의 둘러보기</Link>
             </Button>
@@ -92,6 +146,17 @@ export default function MyLecturesPage() {
         )}
       </div>
     </div>
-  )
+  );
 }
 
+// Define a basic Course type (adjust based on your actual data structure)
+// You might want to move this to a shared types file (e.g., @/types/course.ts)
+// interface Course {
+//   id: string;
+//   title: string;
+//   description?: string;
+//   image_url?: string;
+//   category?: string;
+//   created_at?: string;
+//   // Add other fields returned by your API as needed
+// }

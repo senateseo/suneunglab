@@ -17,6 +17,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { BookOpen, CreditCard, ArrowLeft, CheckCircle } from "lucide-react";
 import { loadTossPayments, ANONYMOUS } from "@tosspayments/tosspayments-sdk";
+import { useAuth } from "../../contexts/auth-context";
 
 // Mock data for courses
 
@@ -75,6 +76,8 @@ function PaymentPageContent() {
   const [paymentComplete, setPaymentComplete] = useState(false);
   const [widgets, setWidgets]: any = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  const { user } = useAuth();
 
   // useEffect(() => {
   //   async function fetchCourse() {
@@ -187,7 +190,12 @@ function PaymentPageContent() {
       await widgets.requestPayment({
         orderId: generateRandomString(), // 고유 주문 번호
         orderName: course.title,
-        successUrl: origin + "/widget/success", // 결제 요청이 성공하면 리다이렉트되는 URL
+        successUrl:
+          origin +
+          "/widget/success?courseId=" +
+          courseId +
+          "&userId=" +
+          user?.id, // 결제 요청이 성공하면 리다이렉트되는 URL
         failUrl: origin + "/fail", // 결제 요청이 실패하면 리다이렉트되는 URL
         customerEmail: "customer123@gmail.com",
         customerName: "김토스",

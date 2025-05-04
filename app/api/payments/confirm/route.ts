@@ -19,7 +19,7 @@ const supabase = createClient(
 const encryptedWidgetSecretKey = "Basic " + Buffer.from(widgetSecretKey + ":").toString("base64");
 
 // Helper function to save payment data to database
-async function savePaymentData(paymentData, userId = null) {
+async function savePaymentData(paymentData: any, userId = null) {
   const { payment_key, order_id, amount, status, message } = paymentData;
   
   const { data, error } = await supabase
@@ -46,11 +46,31 @@ async function savePaymentData(paymentData, userId = null) {
   return data;
 }
 
+
+// Enroll user to course
+async function enrollUserToCourse(userId: string, courseId: string) {
+  const { data, error } = await supabase
+    .from('enrollments')
+    .insert([
+      {
+        user_id: userId,
+        course_id: courseId,
+      }
+    ]);
+
+  if (error) {
+    console.error("Error enrolling user to course:", error);
+    return null;
+  }
+
+  return data;
+}
+
 // Next.js API route handler for confirming Toss payments
 export async function POST(request: Request) {
   try {
     // Parse the request body
-    const { paymentKey, orderId, amount, userId } = await request.json();
+    const { paymentKey, orderId, amount, userId, courseId } = await request.json();
     
     // Validate required fields
     if (!paymentKey || !orderId || !amount) {
@@ -106,6 +126,12 @@ export async function POST(request: Request) {
       status: 'SUCCESS',
       message: '결제 승인 성공',
     }, userId);
+
+
+    // TODO: 결제 승인 후 사용자가 구매한 강의 정보 업데이트.
+
+    await enrollUserToCourse(userId, courseId);
+
     
     return NextResponse.json(result, { status: response.status });
     

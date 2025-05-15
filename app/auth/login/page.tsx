@@ -103,6 +103,12 @@ export default function LoginPage() {
     try {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
+        options: {
+          redirectTo:
+            process.env.NODE_ENV === "development"
+              ? `${window.location.origin}`
+              : "https://snlab.kr",
+        },
       });
 
       if (error) {

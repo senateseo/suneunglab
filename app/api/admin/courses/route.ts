@@ -62,7 +62,6 @@ export async function PUT(request: Request) {
       updated_at: new Date().toISOString(),
     }
 
-    console.log("업데이트할 강의 데이터:", formattedCourseData)
 
     // 강의 업데이트
     const { data, error } = await supabase

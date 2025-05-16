@@ -1,27 +1,40 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useParams, useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Label } from "@/components/ui/label"
-import { Switch } from "@/components/ui/switch"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { updateCourse, getCourseModules, createModule } from "@/lib/admin"
-import type { Course, Module } from "@/types"
-import { useToast } from "@/components/ui/use-toast"
-import { ArrowLeft, Plus, Save } from "lucide-react"
-import { useAuth } from "@/contexts/auth-context"
-import Link from "next/link"
+import { useState, useEffect } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { updateCourse, getCourseModules, createModule } from "@/lib/admin";
+import type { Course, Module } from "@/types";
+import { useToast } from "@/components/ui/use-toast";
+import { ArrowLeft, Plus, Save } from "lucide-react";
+import { useAuth } from "@/contexts/auth-context";
+import Link from "next/link";
 
 export default function CourseEditPage() {
-  const params = useParams()
-  const router = useRouter()
-  const { toast } = useToast()
-  const courseId = params?.courseId as string
+  const params = useParams();
+  const router = useRouter();
+  const { toast } = useToast();
+  const courseId = params?.courseId as string;
 
   const [course, setCourse] = useState<Partial<Course>>({
     title: "",
@@ -34,73 +47,75 @@ export default function CourseEditPage() {
     image_url: "",
     published: false,
     instructor_id: "",
-  })
+  });
 
-  const [modules, setModules] = useState<Module[]>([])
-  const [newModule, setNewModule] = useState({ title: "" })
-  const [isLoading, setIsLoading] = useState(true)
-  const [isSaving, setIsSaving] = useState(false)
+  const [modules, setModules] = useState<Module[]>([]);
+  const [newModule, setNewModule] = useState({ title: "" });
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
 
-  const { user } = useAuth()
+  const { user } = useAuth();
 
   useEffect(() => {
-    console.log("CourseEditPage 마운트, courseId:", courseId)
-    fetchCourseData()
-  }, [courseId])
+    console.log("CourseEditPage 마운트, courseId:", courseId);
+    fetchCourseData();
+  }, [courseId]);
 
   async function fetchCourseData() {
     try {
-      setIsLoading(true)
+      setIsLoading(true);
 
       // courseId가 유효한 경우에만 getCourse 호출
       if (courseId) {
         // API를 통해 강의 정보 가져오기
-        const response = await fetch(`/api/admin/courses/${courseId}`)
+        const response = await fetch(`/api/admin/courses/${courseId}`);
 
         if (!response.ok) {
-          const errorData = await response.json()
-          throw new Error(errorData.error || "강의 정보를 가져오는 중 오류가 발생했습니다.")
+          const errorData = await response.json();
+          throw new Error(
+            errorData.error || "강의 정보를 가져오는 중 오류가 발생했습니다."
+          );
         }
 
-        const courseData = await response.json()
+        const courseData = await response.json();
 
         if (courseData) {
-          setCourse(courseData)
+          setCourse(courseData);
 
           // 모듈 데이터 설정
           if (courseData.modules) {
-            setModules(courseData.modules)
+            setModules(courseData.modules);
           } else {
             // 별도로 모듈 데이터 가져오기
-            const modulesData = await getCourseModules(courseId)
-            setModules(modulesData)
+            const modulesData = await getCourseModules(courseId);
+            setModules(modulesData);
           }
         }
       }
     } catch (error) {
-      console.error("Error fetching course data:", error)
+      console.error("Error fetching course data:", error);
       toast({
         title: "오류 발생",
         description: "강의 데이터를 불러오는 중 오류가 발생했습니다.",
         variant: "destructive",
-      })
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
   }
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target
-    setCourse({ ...course, [name]: value })
-  }
+    const { name, value } = e.target;
+    setCourse({ ...course, [name]: value });
+  };
 
   const handleSelectChange = (name, value) => {
-    setCourse({ ...course, [name]: value })
-  }
+    setCourse({ ...course, [name]: value });
+  };
 
   const handleSwitchChange = (name, checked) => {
-    setCourse({ ...course, [name]: checked })
-  }
+    setCourse({ ...course, [name]: checked });
+  };
 
   const handleAddModule = async () => {
     if (!newModule.title.trim()) {
@@ -108,61 +123,69 @@ export default function CourseEditPage() {
         title: "모듈 제목 필요",
         description: "모듈 제목을 입력해주세요.",
         variant: "destructive",
-      })
-      return
+      });
+      return;
     }
 
     try {
-      console.log("모듈 추가 시도:", { courseId, title: newModule.title })
+      console.log("모듈 추가 시도:", { courseId, title: newModule.title });
 
       const moduleData = {
         course_id: courseId,
         title: newModule.title,
         order: modules.length + 1,
-      }
+      };
 
-      console.log("모듈 생성 데이터:", moduleData)
-      const newModuleData = await createModule(moduleData)
-      console.log("생성된 모듈:", newModuleData)
+      console.log("모듈 생성 데이터:", moduleData);
+      const newModuleData = await createModule(moduleData);
+      console.log("생성된 모듈:", newModuleData);
 
       if (newModuleData) {
-        setModules([...modules, newModuleData])
-        setNewModule({ title: "" })
+        setModules([...modules, newModuleData]);
+        setNewModule({ title: "" });
 
         toast({
           title: "모듈 추가 완료",
           description: "새 모듈이 성공적으로 추가되었습니다.",
-        })
+        });
       }
     } catch (error) {
-      console.error("Error adding module:", error)
+      console.error("Error adding module:", error);
       toast({
         title: "오류 발생",
-        description: "모듈 추가 중 오류가 발생했습니다: " + (error.message || "알 수 없는 오류"),
+        description:
+          "모듈 추가 중 오류가 발생했습니다: " +
+          (error.message || "알 수 없는 오류"),
         variant: "destructive",
-      })
+      });
     }
-  }
+  };
 
   const handleUpdateCourse = async () => {
     // 필수 필드 검증
-    if (!course.title || !course.description || !course.category || !course.level || !course.duration) {
+    if (
+      !course.title ||
+      !course.description ||
+      !course.category ||
+      !course.level ||
+      !course.duration
+    ) {
       toast({
         title: "필수 정보 누락",
         description: "모든 필수 정보를 입력해주세요.",
         variant: "destructive",
-      })
-      return
+      });
+      return;
     }
 
-    setIsSaving(true)
+    setIsSaving(true);
 
     try {
-      console.log("기존 강의 업데이트 시도:", { courseId, course })
+      console.log("기존 강의 업데이트 시도:", { courseId, course });
 
       // courseId 확인
       if (!courseId) {
-        throw new Error("유효하지 않은 강의 ID입니다.")
+        throw new Error("유효하지 않은 강의 ID입니다.");
       }
 
       // 데이터베이스에 저장할 필드만 선택
@@ -177,7 +200,7 @@ export default function CourseEditPage() {
         image_url,
         published,
         instructor_id,
-      } = course
+      } = course;
 
       const courseData = {
         title,
@@ -190,41 +213,47 @@ export default function CourseEditPage() {
         image_url,
         published,
         instructor_id,
-      }
+      };
 
-      console.log("강의 업데이트 데이터:", courseData)
-      const savedCourse = await updateCourse(courseId, courseData)
-      console.log("업데이트된 강의:", savedCourse)
+      console.log("강의 업데이트 데이터:", courseData);
+      const savedCourse = await updateCourse(courseId, courseData);
+      console.log("업데이트된 강의:", savedCourse);
 
       toast({
         title: "강의 업데이트 완료",
         description: "강의가 성공적으로 업데이트되었습니다.",
-      })
+      });
 
       if (savedCourse) {
-        setCourse({ ...course, ...savedCourse })
+        setCourse({ ...course, ...savedCourse });
       }
     } catch (error) {
-      console.error("Error updating course:", error)
+      console.error("Error updating course:", error);
       toast({
         title: "오류 발생",
-        description: "강의 업데이트 중 오류가 발생했습니다: " + (error.message || "알 수 없는 오류"),
+        description:
+          "강의 업데이트 중 오류가 발생했습니다: " +
+          (error.message || "알 수 없는 오류"),
         variant: "destructive",
-      })
+      });
     } finally {
-      setIsSaving(false)
+      setIsSaving(false);
     }
-  }
+  };
 
   if (isLoading) {
-    return <div className="text-center py-8">강의 정보를 불러오는 중...</div>
+    return <div className="text-center py-8">강의 정보를 불러오는 중...</div>;
   }
 
   return (
     <div>
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center">
-          <Button variant="ghost" className="mr-2" onClick={() => router.push("/admin/courses")}>
+          <Button
+            variant="ghost"
+            className="mr-2"
+            onClick={() => router.push("/admin/courses")}
+          >
             <ArrowLeft className="h-4 w-4 mr-2" />
             뒤로
           </Button>
@@ -265,7 +294,12 @@ export default function CourseEditPage() {
 
                 <div className="space-y-2">
                   <Label htmlFor="category">카테고리 *</Label>
-                  <Select value={course.category} onValueChange={(value) => handleSelectChange("category", value)}>
+                  <Select
+                    value={course.category}
+                    onValueChange={(value) =>
+                      handleSelectChange("category", value)
+                    }
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="카테고리 선택" />
                     </SelectTrigger>
@@ -281,15 +315,20 @@ export default function CourseEditPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="level">난이도 *</Label>
-                  <Select value={course.level} onValueChange={(value) => handleSelectChange("level", value)}>
+                  <Label htmlFor="level">수강 대상 *</Label>
+                  <Select
+                    value={course.level}
+                    onValueChange={(value) =>
+                      handleSelectChange("level", value)
+                    }
+                  >
                     <SelectTrigger>
-                      <SelectValue placeholder="난이도 선택" />
+                      <SelectValue placeholder="수강 대상 선택" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="초급">초급</SelectItem>
-                      <SelectItem value="중급">중급</SelectItem>
-                      <SelectItem value="고급">고급</SelectItem>
+                      <SelectItem value="1-2등급">1-2등급</SelectItem>
+                      <SelectItem value="3-4등급">3-4등급</SelectItem>
+                      <SelectItem value="5-6등급">5-6등급</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -371,23 +410,34 @@ export default function CourseEditPage() {
 
                 {modules.length === 0 ? (
                   <div className="text-center py-8 border rounded-md bg-muted/30">
-                    <p className="text-muted-foreground">아직 모듈이 없습니다. 새 모듈을 추가하세요.</p>
+                    <p className="text-muted-foreground">
+                      아직 모듈이 없습니다. 새 모듈을 추가하세요.
+                    </p>
                   </div>
                 ) : (
                   <div className="space-y-2">
                     {modules.map((module, index) => (
-                      <div key={module.id} className="flex items-center justify-between p-4 border rounded-md">
+                      <div
+                        key={module.id}
+                        className="flex items-center justify-between p-4 border rounded-md"
+                      >
                         <div>
                           <h4 className="font-medium">
                             모듈 {index + 1}: {module.title}
                           </h4>
                           <p className="text-sm text-muted-foreground">
                             {/* 강의 수를 표시할 수 있음 */}
-                            {module.lessons ? `${module.lessons.length}개 강의` : "0개 강의"}
+                            {module.lessons
+                              ? `${module.lessons.length}개 강의`
+                              : "0개 강의"}
                           </p>
                         </div>
                         <Button variant="outline" asChild>
-                          <Link href={`/admin/courses/edit/${courseId}/modules/${module.id}`}>관리</Link>
+                          <Link
+                            href={`/admin/courses/edit/${courseId}/modules/${module.id}`}
+                          >
+                            관리
+                          </Link>
                         </Button>
                       </div>
                     ))}
@@ -418,18 +468,24 @@ export default function CourseEditPage() {
           <Card>
             <CardHeader>
               <CardTitle>강의 설정</CardTitle>
-              <CardDescription>강의 게시 상태 및 기타 설정을 관리하세요.</CardDescription>
+              <CardDescription>
+                강의 게시 상태 및 기타 설정을 관리하세요.
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <Label htmlFor="published">게시 상태</Label>
-                  <p className="text-sm text-muted-foreground">강의를 학생들에게 공개할지 여부를 설정합니다.</p>
+                  <p className="text-sm text-muted-foreground">
+                    강의를 학생들에게 공개할지 여부를 설정합니다.
+                  </p>
                 </div>
                 <Switch
                   id="published"
                   checked={course.published}
-                  onCheckedChange={(checked) => handleSwitchChange("published", checked)}
+                  onCheckedChange={(checked) =>
+                    handleSwitchChange("published", checked)
+                  }
                 />
               </div>
             </CardContent>
@@ -443,6 +499,5 @@ export default function CourseEditPage() {
         </TabsContent>
       </Tabs>
     </div>
-  )
+  );
 }
-

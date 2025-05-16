@@ -84,15 +84,15 @@ export async function GET(request: Request, { params }: { params: { courseId: st
       modules: modulesWithLectures,
       instructor: instructorData
         ? {
-            name: instructorData.name || "강사 이름",
-            title: "강의 전문가",
-            bio: "강의 전문가입니다.",
+            name: instructorData.name || "송이삭",
+            title: "송이삭",
+            bio: "송이삭",
             avatar: instructorData.avatar_url || "/placeholder.svg?height=100&width=100",
           }
         : {
-            name: "강사 이름",
-            title: "강의 전문가",
-            bio: "강의 전문가입니다.",
+            name: "송이삭",
+            title: "송이삭",
+            bio: "송이삭",
             avatar: "/placeholder.svg?height=100&width=100",
           },
       whatYouWillLearn: [

@@ -25,7 +25,13 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const { user, isLoading: authLoading } = useAuth();
+  const {
+    user,
+    isLoading: authLoading,
+    error,
+    setError,
+    clearError,
+  } = useAuth();
   const { toast } = useToast();
   const router = useRouter();
 
@@ -55,7 +61,8 @@ export default function LoginPage() {
       });
 
       if (error) {
-        console.error("Supabase 로그인 오류:", error);
+        console.error("로그인 오류:", error);
+        setError("존재하지 않는 이메일이거나 비밀번호가 올바르지 않습니다.");
         throw error;
       }
 
@@ -262,6 +269,11 @@ export default function LoginPage() {
                   />
                 </div>
 
+                {error && (
+                  <div className="text-red-500 text-sm text-center">
+                    {error}
+                  </div>
+                )}
                 <Button type="submit" className="w-full" disabled={isLoading}>
                   {isLoading ? (
                     <>

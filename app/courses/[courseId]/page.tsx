@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -21,7 +21,7 @@ import { useAuth } from "../../../contexts/auth-context";
 
 export default function CoursePage() {
   const { user } = useAuth();
-
+  const router = useRouter();
   const params = useParams();
   const courseId = params.courseId;
   const [course, setCourse] = useState(null);
@@ -42,6 +42,14 @@ export default function CoursePage() {
       );
     }
   }, [user, courseId]);
+
+  const handleClickEnroll = () => {
+    if (user) {
+      router.push(`/courses/${courseId}/lectures`);
+    } else {
+      router.push(`/auth/login`);
+    }
+  };
 
   async function fetchCourse() {
     try {
@@ -119,7 +127,7 @@ export default function CoursePage() {
               <h1 className="text-3xl md:text-4xl font-bold mb-4">
                 {course.title}
               </h1>
-              <p className="text-lg text-muted-foreground mb-6">
+              <p className="text-lg text-muted-foreground mb-6 whitespace-pre-wrap">
                 {course.long_description || course.description}
               </p>
 
@@ -294,9 +302,9 @@ export default function CoursePage() {
                         <BookOpen className="mr-2 h-4 w-4" /> 강의 보기
                       </Link>
                     ) : (
-                      <Link href={`/payment?courseId=${course.id}`}>
-                        <BookOpen className="mr-2 h-4 w-4" /> 지금 등록하기
-                      </Link>
+                      <Button onClick={handleClickEnroll}>
+                        <BookOpen className="mr-2 h-4 w-4" /> 수강하러 가기
+                      </Button>
                     )}
                   </Button>
 
@@ -382,9 +390,9 @@ export default function CoursePage() {
                   <BookOpen className="mr-2 h-4 w-4" /> 강의 보기
                 </Link>
               ) : (
-                <Link href={`/payment?courseId=${course.id}`}>
-                  <BookOpen className="mr-2 h-4 w-4" /> 지금 등록하기
-                </Link>
+                <Button onClick={handleClickEnroll}>
+                  <BookOpen className="mr-2 h-4 w-4" /> 수강하러 가기
+                </Button>
               )}
             </Button>
           </div>

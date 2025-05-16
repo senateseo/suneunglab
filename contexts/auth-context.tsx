@@ -23,6 +23,9 @@ interface ExtendedAuthUser extends AuthUser {
 interface AuthContextType {
   user: any | null;
   isLoading: boolean;
+  error: string | null;
+  setError: (error: string | null) => void;
+  clearError: () => void;
   signUp: (email: string, password: string, name: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
@@ -33,10 +36,14 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<ExtendedAuthUser | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const authCheckTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isMountedRef = useRef(true); // 컴포넌트 마운트 상태 추적
+
+  // 에러 초기화 함수
+  const clearError = () => setError(null);
 
   // 초기 사용자 로드 및 인증 상태 변경 감지
   useEffect(() => {
@@ -55,12 +62,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (!isMountedRef.current) return;
 
         safeSetState(setIsLoading, true);
+        safeSetState(setError, null);
 
         // 타임아웃 설정 (15초)
         authCheckTimeoutRef.current = setTimeout(() => {
           if (isMountedRef.current) {
             safeSetState(setIsLoading, false);
             safeSetState(setUser, null);
+            safeSetState(setError, "사용자 정보 로드 시간이 초과되었습니다.");
           }
         }, 15000);
 
@@ -70,8 +79,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         let currentUser = null;
         try {
           currentUser = await getCurrentUser();
-        } catch (userError) {
+        } catch (userError: any) {
           console.error("사용자 정보 가져오기 오류:", userError);
+          safeSetState(
+            setError,
+            userError?.message ||
+              "사용자 정보를 가져오는 중 오류가 발생했습니다."
+          );
         }
 
         if (!isMountedRef.current) return;
@@ -89,6 +103,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               .single();
 
             if (!isMountedRef.current) return;
+
+            if (error) {
+              console.warn("프로필 정보를 가져오는 중 오류:", error.message);
+            }
 
             if (!error && data) {
               safeSetState(setUser, {
@@ -112,10 +130,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 safeSetState(setUser, currentUser);
               }
             }
-          } catch (profileError) {
+          } catch (profileError: any) {
             if (!isMountedRef.current) return;
 
             console.error("프로필 정보 조회 오류:", profileError);
+            safeSetState(
+              setError,
+              profileError?.message ||
+                "프로필 정보를 조회하는 중 오류가 발생했습니다."
+            );
 
             // 프로필 조회 실패 시 이메일 기반으로 관리자 여부 결정 (임시 해결책)
             if (adminEmails.includes(currentUser.email)) {
@@ -131,11 +154,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } else {
           safeSetState(setUser, null);
         }
-      } catch (error) {
+      } catch (error: any) {
         if (!isMountedRef.current) return;
 
         console.error("Error fetching user:", error);
         safeSetState(setUser, null);
+        safeSetState(
+          setError,
+          error?.message || "사용자 정보를 가져오는 중 오류가 발생했습니다."
+        );
       } finally {
         // 타임아웃 제거
         if (authCheckTimeoutRef.current) {
@@ -169,10 +196,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     name: string
   ) => {
     setIsLoading(true);
+    setError(null);
     try {
       await authSignUp(email, password, name);
       router.push("/auth/verify-email");
     } catch (error: any) {
+      console.error("회원가입 오류:", error);
+      setError(error?.message || "회원가입 중 오류가 발생했습니다.");
       throw error;
     } finally {
       setIsLoading(false);
@@ -182,12 +212,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // 로그인 함수
   const handleSignIn = async (email: string, password: string) => {
     setIsLoading(true);
+    setError(null);
 
     // 타임아웃 설정
     const loginTimeout = setTimeout(() => {
       console.error("로그인 타임아웃 발생");
       setIsLoading(false);
-      throw new Error("로그인 요청이 시간 초과되었습니다. 다시 시도해주세요.");
+      const timeoutError = new Error(
+        "로그인 요청이 시간 초과되었습니다. 다시 시도해주세요."
+      );
+      setError(timeoutError.message);
+      throw timeoutError;
     }, 10000); // 10초 타임아웃
 
     try {
@@ -200,7 +235,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       clearTimeout(loginTimeout);
 
       if (error) {
+        console.log(error);
         console.error("로그인 오류:", error.message);
+        setError(error.message);
         throw error;
       }
 
@@ -211,6 +248,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           .select("role, status")
           .eq("id", data.user.id)
           .single();
+
+        if (profileError) {
+          console.error("프로필 조회 오류:", profileError.message);
+        }
 
         if (!profileError && profileData) {
           const userWithRole = {
@@ -226,7 +267,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
           // 사용자 상태 확인
           if (profileData.status === "blocked") {
-            throw new Error("계정이 차단되었습니다. 관리자에게 문의하세요.");
+            const blockedError = new Error(
+              "계정이 차단되었습니다. 관리자에게 문의하세요."
+            );
+            setError(blockedError.message);
+            throw blockedError;
           }
         } else {
           // 프로필이 없는 경우 기본 사용자 정보 설정
@@ -240,8 +285,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           });
           router.push("/my-page");
         }
-      } catch (profileError) {
+      } catch (profileError: any) {
         console.error("프로필 정보 조회 오류:", profileError);
+        setError(
+          profileError?.message ||
+            "프로필 정보를 조회하는 중 오류가 발생했습니다."
+        );
 
         // 프로필 조회 실패 시 기본 사용자 정보로 설정
         setUser({
@@ -260,6 +309,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       clearTimeout(loginTimeout);
 
       console.error("로그인 처리 중 오류:", error);
+      setError(error?.message || "로그인 중 오류가 발생했습니다.");
       throw error;
     } finally {
       // 타임아웃 취소
@@ -271,11 +321,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // 로그아웃 함수
   const handleSignOut = async () => {
     setIsLoading(true);
+    setError(null);
     try {
       await authSignOut();
       setUser(null);
       router.push("/");
     } catch (error: any) {
+      console.error("로그아웃 오류:", error);
+      setError(error?.message || "로그아웃 중 오류가 발생했습니다.");
       throw error;
     } finally {
       setIsLoading(false);
@@ -283,7 +336,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   // 관리자 여부 확인
-  // 관리자 여부 확인 (임시 해결책)
   const isAdmin = Boolean(user?.role === "admin");
 
   return (
@@ -291,6 +343,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       value={{
         user,
         isLoading,
+        error,
+        setError,
+        clearError,
         signUp: handleSignUp,
         signIn: handleSignIn,
         signOut: handleSignOut,
@@ -313,6 +368,9 @@ export function useAuth() {
     return {
       user: null,
       isLoading: false,
+      error: null,
+      setError: () => {},
+      clearError: () => {},
       signUp: async () => {
         throw new Error("Auth provider not available");
       },

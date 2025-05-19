@@ -31,6 +31,13 @@ export function MainNav() {
           <div className="font-bold text-xl">수능연구소</div>
         </Link>
 
+        <Link
+          href="/courses"
+          className="flex items-center hover:opacity-70 transition-opacity duration-300 hover:underline underline-offset-4"
+        >
+          <div className="font-medium text-base">스파르타 강의</div>
+        </Link>
+
         <div className="flex items-center gap-4">
           {!isLoading && user ? (
             <DropdownMenu>

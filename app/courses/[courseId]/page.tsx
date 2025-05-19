@@ -138,7 +138,7 @@ export default function CoursePage() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-4 mb-8">
+              {/* <div className="flex items-center gap-4 mb-8">
                 <img
                   src={
                     course.instructor.avatar ||
@@ -153,14 +153,14 @@ export default function CoursePage() {
                     {course.instructor.title}
                   </p>
                 </div>
-              </div>
+              </div> */}
             </div>
 
             <Tabs defaultValue="content">
-              <TabsList className="grid grid-cols-3 mb-8">
+              <TabsList className="grid grid-cols-2 mb-8">
                 <TabsTrigger value="content">강의 내용</TabsTrigger>
-                <TabsTrigger value="overview">개요</TabsTrigger>
-                <TabsTrigger value="discussion">토론</TabsTrigger>
+                <TabsTrigger value="overview">수강대상</TabsTrigger>
+                {/* <TabsTrigger value="discussion">리뷰</TabsTrigger> */}
               </TabsList>
 
               <TabsContent value="content" className="space-y-6">
@@ -227,7 +227,7 @@ export default function CoursePage() {
                         </li>
                       ))}
                     </ul>
-
+                    {/* 
                     <h3 className="text-xl font-semibold mt-8 mb-4">
                       강사 소개
                     </h3>
@@ -249,12 +249,12 @@ export default function CoursePage() {
                         </p>
                         <p>{course.instructor.bio}</p>
                       </div>
-                    </div>
+                    </div> */}
                   </CardContent>
                 </Card>
               </TabsContent>
 
-              <TabsContent value="discussion">
+              {/* <TabsContent value="discussion">
                 <Card>
                   <CardContent className="p-6">
                     <div className="flex items-center gap-2 mb-6">
@@ -270,7 +270,7 @@ export default function CoursePage() {
                     </div>
                   </CardContent>
                 </Card>
-              </TabsContent>
+              </TabsContent> */}
             </Tabs>
           </div>
 
@@ -323,41 +323,6 @@ export default function CoursePage() {
                           ) || "다수"}
                           개의 비디오 강의
                         </span>
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <FileText className="h-4 w-4" />
-                        <span>
-                          {course.modules.reduce(
-                            (total, module) =>
-                              total +
-                              (module.lessons?.filter(
-                                (l) => l.type === "assignment"
-                              ).length || 0),
-                            0
-                          ) || "다수"}
-                          개의 과제
-                        </span>
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <CheckCircle2 className="h-4 w-4" />
-                        <span>
-                          {course.modules.reduce(
-                            (total, module) =>
-                              total +
-                              (module.lessons?.filter((l) => l.type === "quiz")
-                                .length || 0),
-                            0
-                          ) || "다수"}
-                          개의 퀴즈
-                        </span>
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <MessageSquare className="h-4 w-4" />
-                        <span>토론 포럼 접근</span>
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <Award className="h-4 w-4" />
-                        <span>수료증</span>
                       </li>
                     </ul>
                   </div>

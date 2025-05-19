@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Loader } from "lucide-react";
+import { FolderDown, Loader } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useAuth } from "../../contexts/auth-context";
 
@@ -119,12 +119,28 @@ export default function MyLecturesPage() {
                   <Progress value={course.progress} className="h-2 mb-4" />
                   <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
                     <div></div>
-                    <Button className="mt-4 md:mt-0" asChild>
-                      {/* Ensure the link uses the correct course ID */}
-                      <Link href={`/courses/${course.id}/lectures`}>
-                        강의보기
-                      </Link>
-                    </Button>
+                    <div className="flex items-center gap-2">
+                      <Button className="mt-4 md:mt-0" asChild>
+                        {/* Ensure the link uses the correct course ID */}
+                        <Link href={`/courses/${course.id}/lectures`}>
+                          강의보기
+                        </Link>
+                      </Button>
+                      <Button
+                        className="mt-4 md:mt-0 bg-gray-100 text-gray-800 hover:bg-gray-200 hover:text-gray-900"
+                        asChild
+                      >
+                        <a
+                          href="https://o5rbbk4djjxsj1ym.public.blob.vercel-storage.com/2026ver%E1%84%89%E1%85%B3%E1%84%91%E1%85%A1%E1%84%85%E1%85%B3%E1%84%90%E1%85%A1-eZ4n8oWElWthLsJ6ypGyywt9iccuo0.pdf"
+                          download="2026ver스파르타.pdf"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <FolderDown className="h-4 w-4" />
+                          강의 자료
+                        </a>
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </div>

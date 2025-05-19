@@ -493,13 +493,13 @@ export default function LecturePage() {
 
             {/* 강의 설명 */}
             <div className="space-y-6 mb-8">
-              <div>
+              {/* <div>
                 <h2 className="text-xl font-semibold mb-2">강의 설명</h2>
                 <p className="text-muted-foreground">
                   {currentLecture.description ||
                     "이 강의에 대한 설명이 없습니다."}
                 </p>
-              </div>
+              </div> */}
 
               {currentLecture.notes && (
                 <>

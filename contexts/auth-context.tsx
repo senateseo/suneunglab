@@ -30,6 +30,8 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   isAdmin: boolean;
+  resetPassword: (email: string) => Promise<void>;
+  updatePassword: (newPassword: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -338,6 +340,44 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // 관리자 여부 확인
   const isAdmin = Boolean(user?.role === "admin");
 
+  // 비밀번호 재설정 이메일 전송
+  const handleResetPassword = async (email: string) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/my-page/settings?reset=true`,
+      });
+      if (error) throw error;
+    } catch (error: any) {
+      console.error("비밀번호 재설정 이메일 전송 오류:", error);
+      setError(
+        error?.message || "비밀번호 재설정 이메일 전송 중 오류가 발생했습니다."
+      );
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 새 비밀번호로 업데이트
+  const handleUpdatePassword = async (newPassword: string) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword,
+      });
+      if (error) throw error;
+    } catch (error: any) {
+      console.error("비밀번호 업데이트 오류:", error);
+      setError(error?.message || "비밀번호 업데이트 중 오류가 발생했습니다.");
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -350,6 +390,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         signIn: handleSignIn,
         signOut: handleSignOut,
         isAdmin,
+        resetPassword: handleResetPassword,
+        updatePassword: handleUpdatePassword,
       }}
     >
       {children}
@@ -381,6 +423,12 @@ export function useAuth() {
         throw new Error("Auth provider not available");
       },
       isAdmin: false,
+      resetPassword: async () => {
+        throw new Error("Auth provider not available");
+      },
+      updatePassword: async () => {
+        throw new Error("Auth provider not available");
+      },
     };
   }
   return context;

@@ -12,6 +12,10 @@ export async function getAllUsers(): Promise<User[]> {
       .select("*")
       .order("created_at", { ascending: false })
 
+    const {data:authUsers} = await supabase.auth.admin.listUsers();
+
+    console.log("AUTH USERS", authUsers);
+
     if (profilesError) {
       console.error("프로필 목록 조회 오류:", profilesError)
       throw profilesError
@@ -25,7 +29,8 @@ export async function getAllUsers(): Promise<User[]> {
     const usersWithEmail = await Promise.all(
       profiles.map(async (profile) => {
         // 현재 로그인한 사용자의 이메일 사용 (자신의 이메일은 볼 수 있음)
-        if (authData?.user && profile.id === authData.user.id) {
+        console.log("USER WITH EMAIL", profile);
+          if (authData?.user && profile.id === authData.user.id) {
           return {
             ...profile,
             email: authData.user.email || "이메일 없음",
@@ -40,45 +45,7 @@ export async function getAllUsers(): Promise<User[]> {
       }),
     )
 
-    console.log("가져온 사용자 데이터:", usersWithEmail)
 
-    // 데이터가 없거나 너무 적으면 임시 데이터 추가
-    if (usersWithEmail.length < 2) {
-      console.warn("사용자 데이터가 부족하여 임시 데이터를 추가합니다.")
-
-      // 현재 로그인한 사용자가 있으면 그 정보 유지
-      const currentUser = authData?.user ? usersWithEmail.find((user) => user.id === authData.user.id) : null
-
-      const mockUsers = [
-        currentUser || {
-          id: "eb22e17a-d715-42e4-ac27-254016bcce7d",
-          email: "admin@example.com",
-          name: "관리자",
-          role: "admin",
-          status: "active",
-          created_at: new Date().toISOString(),
-        },
-        {
-          id: "fb33e18b-e826-53f5-bd38-365127cddf8e",
-          email: "student1@example.com",
-          name: "홍길동",
-          role: "user",
-          status: "active",
-          created_at: new Date().toISOString(),
-        },
-        {
-          id: "ac44f29c-f937-64g6-ce49-476238deeg9f",
-          email: "student2@example.com",
-          name: "김철수",
-          role: "user",
-          status: "blocked",
-          created_at: new Date().toISOString(),
-        },
-      ]
-
-      // 현재 사용자가 있으면 중복 제거
-      return currentUser ? [currentUser, ...mockUsers.slice(1)] : mockUsers
-    }
 
     return usersWithEmail
   } catch (error) {

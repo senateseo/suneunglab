@@ -46,26 +46,8 @@ export default function SettingsPage() {
   }, [searchParams]);
 
   const handleResetPassword = async () => {
-    if (!user?.email) return;
-    setIsResettingPassword(true);
-    try {
-      await resetPassword(user.email);
-      toast({
-        title: "이메일 전송 완료",
-        description: "비밀번호 재설정 링크가 이메일로 전송되었습니다.",
-      });
-      setShowResetDialog(false);
-    } catch (error: any) {
-      toast({
-        title: "이메일 전송 실패",
-        description:
-          error.message ||
-          "비밀번호 재설정 이메일 전송 중 오류가 발생했습니다.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsResettingPassword(false);
-    }
+    setShowResetDialog(false);
+    setShowUpdateDialog(true);
   };
 
   const handleUpdatePassword = async () => {
@@ -201,7 +183,7 @@ export default function SettingsPage() {
             <div>
               <h3 className="font-medium">비밀번호 재설정</h3>
               <p className="text-sm text-muted-foreground">
-                이메일로 비밀번호 재설정 링크를 받습니다
+                새로운 비밀번호로 재설정합니다
               </p>
             </div>
             <Dialog open={showResetDialog} onOpenChange={setShowResetDialog}>
@@ -212,7 +194,7 @@ export default function SettingsPage() {
                 <DialogHeader>
                   <DialogTitle>비밀번호 재설정</DialogTitle>
                   <DialogDescription>
-                    {user?.email}로 비밀번호 재설정 링크를 보내시겠습니까?
+                    새로운 비밀번호로 재설정합니다
                   </DialogDescription>
                 </DialogHeader>
                 <div className="flex justify-end gap-2 mt-4">
@@ -226,7 +208,7 @@ export default function SettingsPage() {
                     onClick={handleResetPassword}
                     disabled={isResettingPassword}
                   >
-                    {isResettingPassword ? "전송 중..." : "이메일 전송"}
+                    {isResettingPassword ? "전송 중..." : "비밀번호 변경"}
                   </Button>
                 </div>
               </DialogContent>

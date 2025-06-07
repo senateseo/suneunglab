@@ -9,7 +9,7 @@ const supabase = createClient(
 
 export async function GET(request: Request, { params }: { params: { courseId: string } }) {
   try {
-    const courseId = params.courseId
+    const { courseId } = await params
 
     if (!courseId) {
       return NextResponse.json({ error: "강의 ID가 필요합니다." }, { status: 400 })

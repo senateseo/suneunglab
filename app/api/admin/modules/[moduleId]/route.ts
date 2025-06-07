@@ -9,8 +9,8 @@ const supabase = createClient(
 
 export async function GET(request: Request, { params }: { params: { moduleId: string } }) {
   try {
-    const moduleId = params.moduleId
-    console.log("API: 모듈 상세 정보 요청 받음", { moduleId })
+    const { moduleId } = await params
+    
 
     if (!moduleId) {
       return NextResponse.json({ error: "모듈 ID가 필요합니다." }, { status: 400 })
@@ -28,7 +28,7 @@ export async function GET(request: Request, { params }: { params: { moduleId: st
       return NextResponse.json({ error: "모듈을 찾을 수 없습니다." }, { status: 404 })
     }
 
-    console.log("API: 모듈 상세 정보 조회 성공")
+    
     return NextResponse.json(data)
   } catch (error: any) {
     console.error("API: 모듈 상세 정보 조회 중 오류 발생:", error)
@@ -41,7 +41,7 @@ export async function GET(request: Request, { params }: { params: { moduleId: st
 
 export async function PUT(request: Request, { params }: { params: { moduleId: string } }) {
   try {
-    const moduleId = params.moduleId
+    const { moduleId } = await params
     const moduleData = await request.json()
 
     if (!moduleId) {

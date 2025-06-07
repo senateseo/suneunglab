@@ -6,7 +6,7 @@ const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env
 
 export async function GET(request: Request, { params }: { params: { courseId: string } }) {
   try {
-    const courseId = params.courseId
+    const { courseId } = await params
     console.log("API: 강의 상세 정보 요청 받음", { courseId })
 
     if (!courseId) {

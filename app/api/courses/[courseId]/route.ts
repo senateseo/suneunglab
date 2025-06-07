@@ -7,10 +7,9 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!, // 서비스 역할 키 사용
 )
 
-export async function GET(request: Request, { params }: { params: { courseId: string } }) {
+export async function GET(request: Request, { params }: { params: Promise<{ courseId: string }> }) {
   try {
-    const courseId = params.courseId
-
+    const { courseId } = await params
 
     if (!courseId) {
       return NextResponse.json({ error: "강의 ID가 필요합니다." }, { status: 400 })

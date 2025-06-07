@@ -177,7 +177,7 @@ export default function CoursePage() {
                     <Card key={module.id || index}>
                       <CardContent className="p-6">
                         <h3 className="text-lg font-semibold mb-4">
-                          모듈 {index + 1}: {module.title}
+                          {module.title}
                         </h3>
                         <div className="space-y-3">
                           {module.lessons && module.lessons.length > 0 ? (

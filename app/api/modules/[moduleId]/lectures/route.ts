@@ -9,7 +9,7 @@ const supabase = createClient(
 
 export async function GET(request: Request, { params }: { params: { moduleId: string } }) {
   try {
-    const moduleId = params.moduleId
+    const { moduleId } = await params
 
     if (!moduleId) {
       return NextResponse.json({ error: "모듈 ID가 필요합니다." }, { status: 400 })

@@ -34,6 +34,8 @@ export default function CourseLecturesPage() {
           return
         }
 
+        console.log("USER ENORLLMENTS", user.enrollments)
+
         // 2. 코스 등록 상태 확인
         const isEnrolled = user.enrollments?.some(
           (enrollment: any) => enrollment.course_id === courseId

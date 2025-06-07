@@ -15,6 +15,7 @@ import {
   FileText,
   MessageSquare,
   Award,
+  X,
 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "../../../contexts/auth-context";
@@ -45,7 +46,14 @@ export default function CoursePage() {
 
   const handleClickEnroll = () => {
     if (user) {
-      router.push(`/courses/${courseId}/lectures`);
+
+      if(isEnrolled) {
+        router.push(`/courses/${courseId}/lectures`);
+      } else {
+        // Payment page
+        router.push(`/payment?courseId=${courseId}`);
+      }
+      
     } else {
       router.push(`/auth/login`);
     }
@@ -218,11 +226,22 @@ export default function CoursePage() {
               <TabsContent value="overview">
                 <Card>
                   <CardContent className="p-6">
-                    <h3 className="text-xl font-semibold mb-4">학습 내용</h3>
+                    <h3 className="text-xl font-semibold mb-4">추천 수강대상</h3>
                     <ul className="grid md:grid-cols-2 gap-3">
-                      {course.whatYouWillLearn.map((item, index) => (
+                      {course.whatYouWillLearn.map((item: string, index: number) => (
                         <li key={index} className="flex items-start gap-2">
                           <CheckCircle2 className="h-5 w-5 text-primary mt-0.5" />
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+
+                    <div className="my-8"></div>
+                    <h3 className="text-xl font-semibold mb-4">이런 학생은 듣지 마세요</h3>
+                    <ul className="grid md:grid-cols-2 gap-3">
+                      {["작년 수능 기준 1등급 나오는 학생", "이미 방향성을 잡고 열심히 공부하고 있는 학생"].map((item, index) => (
+                        <li key={index} className="flex items-start gap-2">
+                          <X className="h-5 w-5 text-primary mt-0.5" />
                           <span>{item}</span>
                         </li>
                       ))}

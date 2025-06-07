@@ -601,14 +601,22 @@ export default function LecturePage() {
         {/* 사이드바 - 강의 목차 */}
         <div
           className={cn(
-            "bg-muted/40 border-l w-full md:w-80 overflow-y-auto transition-all duration-300 fixed md:relative inset-y-0 right-0 z-20",
+            "bg-white border-l w-full md:w-80 overflow-y-auto transition-all duration-300 fixed md:relative inset-y-0 right-0 z-20",
             sidebarOpen
               ? "translate-x-0"
               : "translate-x-full md:translate-x-0 md:w-0"
           )}
         >
           <div className="p-4">
-            <h2 className="text-lg font-semibold mb-4">강의 목차</h2>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-semibold">강의 목차</h2>
+              <div className="block md:hidden">
+              <Button variant="outline" size="icon" onClick={toggleSidebar}>
+                <X size={20} />
+              </Button>
+              </div>
+            </div>
+            
             <Accordion
               type="multiple"
               defaultValue={[`module-${moduleIndex}`]}

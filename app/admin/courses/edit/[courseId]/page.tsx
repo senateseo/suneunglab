@@ -327,7 +327,7 @@ export default function CourseEditPage() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="1-2등급">1-2등급</SelectItem>
-                      <SelectItem value="3-4등급">3-4등급</SelectItem>
+                      <SelectItem value="3등급 이하">3등급 이하</SelectItem>
                       <SelectItem value="5-6등급">5-6등급</SelectItem>
                     </SelectContent>
                   </Select>

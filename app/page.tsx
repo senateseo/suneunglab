@@ -546,18 +546,6 @@ export default function HomePage() {
             </div>
             <div className="flex flex-wrap justify-center gap-4 md:gap-8">
               <Link
-                href="/about"
-                className="text-muted-foreground hover:text-foreground"
-              >
-                소개
-              </Link>
-              <Link
-                href="/contact"
-                className="text-muted-foreground hover:text-foreground"
-              >
-                문의하기
-              </Link>
-              <Link
                 href="/privacy"
                 className="text-muted-foreground hover:text-foreground"
               >
@@ -586,6 +574,29 @@ export default function HomePage() {
           </div>
         </div>
       </footer>
+
+      {/* 카카오 채널 플로팅 버튼 */}
+      <a
+        href="http://pf.kakao.com/_bQSJn"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="fixed bottom-6 right-6 z-50 w-14 h-14 bg-yellow-400 hover:bg-yellow-500 rounded-full flex items-center justify-center shadow-lg transition-all duration-200 hover:scale-110"
+        aria-label="카카오 채널 문의하기"
+      >
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          className="text-black"
+        >
+          <path
+            d="M12 3C7.029 3 3 6.336 3 10.5c0 2.616 1.696 4.906 4.256 6.227L6.023 20l4.181-2.213C10.796 17.929 11.387 18 12 18c4.971 0 9-3.336 9-7.5S16.971 3 12 3z"
+            fill="currentColor"
+          />
+        </svg>
+      </a>
 
       {/* Floating bottom bar */}
       {/* <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 w-full px-4">

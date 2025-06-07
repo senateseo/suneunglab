@@ -96,10 +96,10 @@ export async function GET(request: Request, { params }: { params: { courseId: st
             avatar: "/placeholder.svg?height=100&width=100",
           },
       whatYouWillLearn: [
-        "강의의 핵심 개념 이해",
-        "실전 문제 해결 능력 향상",
-        "체계적인 학습 방법 습득",
-        "수능 고득점을 위한 전략",
+        "영어 문장 해석이 고민되는 학생",
+        "영어 문장의 구조부터 배우고 싶은 학생",
+        "문장의 구조는 알지만 실질적인 해석이 되지 않는 학생",
+        "영어를 감으로 푸는 학생",
       ],
     }
 

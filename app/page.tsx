@@ -576,8 +576,8 @@ export default function HomePage() {
       </footer>
 
       {/* 카카오 채널 플로팅 버튼 */}
-      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-center ">
-        <div className="mb-2  text-black font-semibold text-xs px-2 py-1 rounded whitespace-nowrap">
+      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-center bg-white p-2 rounded-lg shadow-lg">
+        <div className="mb-1 text-black font-semibold text-xs px-2 py-1 rounded whitespace-nowrap">
           수강 문의하기
         </div>
         <a

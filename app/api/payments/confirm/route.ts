@@ -129,7 +129,6 @@ export async function POST(request: Request) {
 
 
     // TODO: 결제 승인 후 사용자가 구매한 강의 정보 업데이트.
-
     await enrollUserToCourse(userId, courseId);
 
     

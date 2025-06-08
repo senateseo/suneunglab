@@ -23,6 +23,8 @@ import {
   BookOpen,
   Menu,
   X,
+  Loader2,
+  Loader,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useMobile } from "@/hooks/use-mobile";
@@ -370,10 +372,7 @@ export default function LecturePage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <p className="mb-2">강의 정보를 불러오는 중...</p>
-          <p className="text-sm text-muted-foreground">잠시만 기다려주세요</p>
-        </div>
+        <Loader className="animate-spin" />
       </div>
     );
   }

@@ -368,17 +368,45 @@ export default function CoursePage() {
                 </div>
               </div>
             </div>
+            <div className="flex items-center gap-2">
+
+            <a
+                href="http://pf.kakao.com/_bQSJn"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-4 gap-2 h-10 bg-yellow-400 hover:bg-yellow-500 rounded-md flex items-center justify-center shadow-lg transition-all duration-200"
+                aria-label="카카오 채널 문의하기"
+              >
+           
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                className="text-black"
+              >
+                <path
+                  d="M12 3C7.029 3 3 6.336 3 10.5c0 2.616 1.696 4.906 4.256 6.227L6.023 20l4.181-2.213C10.796 17.929 11.387 18 12 18c4.971 0 9-3.336 9-7.5S16.971 3 12 3z"
+                  fill="currentColor"
+                />
+              </svg>
+              <span className="text-xs md:text-sm text-black font-semibold">문의하기</span>
+            </a>
+              
             <Button asChild>
               {isEnrolled ? (
-                <Link href={`/courses/${courseId}/lectures`}>
+                <Link href={`/courses/${courseId}/lectures`} className="text-xs md:text-sm">
                   <BookOpen className="mr-2 h-4 w-4" /> 강의 보기
                 </Link>
               ) : (
-                <Button onClick={handleClickEnroll}>
+                <Button onClick={handleClickEnroll} className="text-xs md:text-sm">
                   <BookOpen className="mr-2 h-4 w-4" /> 수강하러 가기
                 </Button>
               )}
             </Button>
+             
+            </div>
           </div>
         </div>
       </div>

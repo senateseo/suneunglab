@@ -47,15 +47,6 @@ export default function CourseEditPage() {
   const { user } = useAuth()
 
   useEffect(() => {
-    console.log(
-      "CourseEditPage 마운트, courseId:",
-      courseId,
-      "isNewCourse:",
-      isNewCourse,
-      "path:",
-      window.location.pathname,
-    )
-
     if (isNewCourse) {
       // 새 강의 생성 모드일 때는 로딩 상태 해제
       setIsLoading(false)

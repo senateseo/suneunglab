@@ -17,6 +17,7 @@ import { useAuth } from "../../../contexts/auth-context";
 export default function PaymentSuccessPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const { refreshUser } = useAuth();
   const [paymentDetails, setPaymentDetails] = useState({
     paymentType: "",
     orderId: "",
@@ -71,8 +72,14 @@ export default function PaymentSuccessPage() {
           // Maybe redirect to failure page or show error message
         } else {
           console.log("Payment confirmed successfully:", data);
-          // Handle successful payment confirmation
-          // Maybe update UI to show success message
+          
+          // 결제 완료 후 사용자 정보 새로고침
+          try {
+            await refreshUser();
+            console.log("User information refreshed after payment");
+          } catch (error) {
+            console.error("Error refreshing user information:", error);
+          }
         }
       } catch (error) {
         console.error("Error confirming payment:", error);
@@ -83,7 +90,7 @@ export default function PaymentSuccessPage() {
     if (paymentKey && orderId && amount) {
       confirmPayment();
     }
-  }, [searchParams]);
+  }, [searchParams, refreshUser]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-12">

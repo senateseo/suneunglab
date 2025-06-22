@@ -32,6 +32,7 @@ interface AuthContextType {
   isAdmin: boolean;
   resetPassword: (email: string) => Promise<void>;
   updatePassword: (newPassword: string) => Promise<void>;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -378,6 +379,87 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // 사용자 정보 새로고침 함수
+  const handleRefreshUser = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      // 현재 사용자 정보 가져오기
+      let currentUser = null;
+      try {
+        currentUser = await getCurrentUser();
+      } catch (userError: any) {
+        console.error("사용자 정보 가져오기 오류:", userError);
+        setError(userError?.message || "사용자 정보를 가져오는 중 오류가 발생했습니다.");
+      }
+
+      if (!currentUser) {
+        setUser(null);
+        return;
+      }
+
+      // 특정 관리자 이메일 목록 (임시 해결책)
+      const adminEmails = ["suneunglab1@gmail.com", "admin@example.com"]; // 필요한 관리자 이메일 추가
+
+      // 사용자 프로필 정보 가져오기 시도
+      try {
+        const { data, error } = await supabase
+          .from("profiles")
+          .select("role, status")
+          .eq("id", currentUser.id)
+          .single();
+
+        if (error) {
+          console.warn("프로필 정보를 가져오는 중 오류:", error.message);
+        }
+
+        if (!error && data) {
+          setUser({
+            ...currentUser,
+            role: data.role || "user",
+            status: data.status || "active",
+          });
+        } else {
+          // 프로필 정보를 가져오는 데 실패했지만 이메일이 관리자 목록에 있는 경우
+          if (adminEmails.includes(currentUser.email)) {
+            setUser({
+              ...currentUser,
+              role: "admin",
+              status: "active",
+            });
+          } else {
+            console.warn(
+              "프로필 정보를 찾을 수 없음, 기본 사용자로 설정:",
+              currentUser
+            );
+            setUser(currentUser);
+          }
+        }
+      } catch (profileError: any) {
+        console.error("프로필 정보 조회 오류:", profileError);
+        setError(
+          profileError?.message ||
+            "프로필 정보를 조회하는 중 오류가 발생했습니다."
+        );
+
+        // 프로필 조회 실패 시 기본 사용자 정보로 설정
+        setUser({
+          id: currentUser.id,
+          email: currentUser.email || "",
+          name: currentUser.user_metadata?.name,
+          avatar_url: currentUser.user_metadata?.avatar_url,
+          role: "user",
+          status: "active",
+        });
+      }
+    } catch (error: any) {
+      console.error("사용자 정보 새로고침 중 오류:", error);
+      setError(error?.message || "사용자 정보를 새로고침하는 중 오류가 발생했습니다.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -392,6 +474,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isAdmin,
         resetPassword: handleResetPassword,
         updatePassword: handleUpdatePassword,
+        refreshUser: handleRefreshUser,
       }}
     >
       {children}
@@ -427,6 +510,9 @@ export function useAuth() {
         throw new Error("Auth provider not available");
       },
       updatePassword: async () => {
+        throw new Error("Auth provider not available");
+      },
+      refreshUser: async () => {
         throw new Error("Auth provider not available");
       },
     };

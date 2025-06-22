@@ -24,36 +24,90 @@ export default function CoursePage() {
   const { user } = useAuth();
   const router = useRouter();
   const params = useParams();
-  const courseId = params.courseId;
-  const [course, setCourse] = useState(null);
+  const courseId = params.courseId as string;
+  const [course, setCourse] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isEnrolled, setIsEnrolled] = useState(false);
+  const [isCheckingEnrollment, setIsCheckingEnrollment] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
     fetchCourse();
   }, [courseId]);
 
+  // 사용자가 로그인한 상태일 때 enrollment 상태를 확인
   useEffect(() => {
-    if (user) {
-      setIsEnrolled(
-        user.enrollments.some(
-          (enrollment: any) => enrollment.course_id === courseId
-        )
-      );
+    if (user && courseId) {
+      checkEnrollmentStatus();
+    } else {
+      setIsEnrolled(false);
     }
   }, [user, courseId]);
 
+  // 페이지가 다시 포커스를 받을 때 enrollment 상태 재확인 (결제 후 돌아올 때)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden && user && courseId) {
+        checkEnrollmentStatus();
+      }
+    };
+
+    const handleFocus = () => {
+      if (user && courseId) {
+        checkEnrollmentStatus();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [user, courseId]);
+
+  // 실시간 enrollment 상태 확인
+  const checkEnrollmentStatus = async () => {
+    if (!user) return;
+    
+    try {
+      setIsCheckingEnrollment(true);
+      const response = await fetch(`/api/users/enrollments?userId=${user.id}`);
+      
+      if (response.ok) {
+        const enrollments = await response.json();
+        const enrolled = enrollments.some((enrollment: any) => enrollment.id === courseId);
+        setIsEnrolled(enrolled);
+      } else {
+        // API 호출이 실패한 경우 fallback으로 user.enrollments 사용
+        setIsEnrolled(
+          user.enrollments?.some(
+            (enrollment: any) => enrollment.course_id === courseId
+          ) || false
+        );
+      }
+    } catch (error) {
+      console.error("Error checking enrollment status:", error);
+      // 에러 발생 시 fallback으로 user.enrollments 사용
+      setIsEnrolled(
+        user.enrollments?.some(
+          (enrollment: any) => enrollment.course_id === courseId
+        ) || false
+      );
+    } finally {
+      setIsCheckingEnrollment(false);
+    }
+  };
+
   const handleClickEnroll = () => {
     if (user) {
-
       if(isEnrolled) {
         router.push(`/courses/${courseId}/lectures`);
       } else {
         // Payment page
         router.push(`/payment?courseId=${courseId}`);
       }
-      
     } else {
       router.push(`/auth/login`);
     }
@@ -173,7 +227,7 @@ export default function CoursePage() {
 
               <TabsContent value="content" className="space-y-6">
                 {course.modules && course.modules.length > 0 ? (
-                  course.modules.map((module, index) => (
+                  course.modules.map((module: any, index: number) => (
                     <Card key={module.id || index}>
                       <CardContent className="p-6">
                         <h3 className="text-lg font-semibold mb-4">
@@ -181,7 +235,7 @@ export default function CoursePage() {
                         </h3>
                         <div className="space-y-3">
                           {module.lessons && module.lessons.length > 0 ? (
-                            module.lessons.map((lesson, lessonIndex) => (
+                            module.lessons.map((lesson: any, lessonIndex: number) => (
                               <div
                                 key={lessonIndex}
                                 className="flex items-center justify-between py-2 border-b last:border-0"
@@ -228,7 +282,7 @@ export default function CoursePage() {
                   <CardContent className="p-6">
                     <h3 className="text-xl font-semibold mb-4">추천 수강대상</h3>
                     <ul className="grid md:grid-cols-2 gap-3">
-                      {course.whatYouWillLearn.map((item: string, index: number) => (
+                      {course.whatYouWillLearn?.map((item: string, index: number) => (
                         <li key={index} className="flex items-start gap-2">
                           <CheckCircle2 className="h-5 w-5 text-primary mt-0.5" />
                           <span>{item}</span>
@@ -315,14 +369,15 @@ export default function CoursePage() {
                     </p>
                   </div>
 
-                  <Button size="lg" className="w-full mb-4" asChild>
+                  <Button size="lg" className="w-full mb-4" disabled={isCheckingEnrollment}>
                     {isEnrolled ? (
                       <Link href={`/courses/${courseId}/lectures`}>
                         <BookOpen className="mr-2 h-4 w-4" /> 강의 보기
                       </Link>
                     ) : (
-                      <Button onClick={handleClickEnroll}>
-                        <BookOpen className="mr-2 h-4 w-4" /> 수강하러 가기
+                      <Button onClick={handleClickEnroll} disabled={isCheckingEnrollment}>
+                        <BookOpen className="mr-2 h-4 w-4" /> 
+                        {isCheckingEnrollment ? "확인 중..." : "수강하러 가기"}
                       </Button>
                     )}
                   </Button>
@@ -333,10 +388,10 @@ export default function CoursePage() {
                       <li className="flex items-center gap-2">
                         <PlayCircle className="h-4 w-4" />
                         <span>
-                          {course.modules.reduce(
-                            (total, module) =>
+                          {course.modules?.reduce(
+                            (total: number, module: any) =>
                               total +
-                              (module.lessons?.filter((l) => l.type === "video")
+                              (module.lessons?.filter((l: any) => l.type === "video")
                                 .length || 0),
                             0
                           ) || "다수"}
@@ -394,14 +449,15 @@ export default function CoursePage() {
               <span className="text-xs md:text-sm text-black font-semibold">문의하기</span>
             </a>
               
-            <Button asChild>
+            <Button disabled={isCheckingEnrollment}>
               {isEnrolled ? (
                 <Link href={`/courses/${courseId}/lectures`} className="text-xs md:text-sm">
                   <BookOpen className="mr-2 h-4 w-4" /> 강의 보기
                 </Link>
               ) : (
-                <Button onClick={handleClickEnroll} className="text-xs md:text-sm">
-                  <BookOpen className="mr-2 h-4 w-4" /> 수강하러 가기
+                <Button onClick={handleClickEnroll} className="text-xs md:text-sm" disabled={isCheckingEnrollment}>
+                  <BookOpen className="mr-2 h-4 w-4" /> 
+                  {isCheckingEnrollment ? "확인 중..." : "수강하러 가기"}
                 </Button>
               )}
             </Button>

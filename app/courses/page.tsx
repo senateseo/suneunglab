@@ -201,9 +201,9 @@ function CourseCard({ course }) {
       </CardContent>
 
       <CardFooter>
-        <Button className="w-full" asChild>
+        <Button className="w-full flex items-center" asChild>
           <Link href={`/courses/${course.id}`}>
-            <BookOpen className="mr-2 h-4 w-4" /> 강의 보기
+            <BookOpen className="mr-2 h-4 w-4" /> <span>강의 보기</span>
           </Link>
         </Button>
       </CardFooter>

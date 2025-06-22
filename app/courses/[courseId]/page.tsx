@@ -376,9 +376,9 @@ export default function CoursePage() {
                         <BookOpen className="mr-2 h-4 w-4" /> <span>강의 보기</span>
                       </Link>
                     ) : (
-                      <Button onClick={handleClickEnroll} disabled={isCheckingEnrollment}>
+                      <Button onClick={handleClickEnroll} disabled={isCheckingEnrollment} className="flex items-center">
                         <BookOpen className="mr-2 h-4 w-4" /> 
-                        {isCheckingEnrollment ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "수강하러 가기"}
+                        {isCheckingEnrollment ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <span>수강하러 가기</span>}
                       </Button>
                     )}
                   </Button>
@@ -456,9 +456,9 @@ export default function CoursePage() {
                   <BookOpen className="mr-2 h-4 w-4" /> <span>강의 보기</span>
                 </Link>
               ) : (
-                <Button onClick={handleClickEnroll} className="text-xs md:text-sm" disabled={isCheckingEnrollment}>
+                <Button onClick={handleClickEnroll} className="text-xs md:text-sm flex items-center" disabled={isCheckingEnrollment}>
                   <BookOpen className="mr-2 h-4 w-4" /> 
-                  {isCheckingEnrollment ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "수강하러 가기"}
+                  {isCheckingEnrollment ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <span>수강하러 가기</span>}
                 </Button>
               )}
             </Button>

@@ -16,6 +16,7 @@ import {
   MessageSquare,
   Award,
   X,
+  Loader2,
 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "../../../contexts/auth-context";
@@ -369,15 +370,15 @@ export default function CoursePage() {
                     </p>
                   </div>
 
-                  <Button size="lg" className="w-full mb-4" disabled={isCheckingEnrollment}>
+                  <Button size="lg" className="w-full mb-4 flex items-center" disabled={isCheckingEnrollment}>
                     {isEnrolled ? (
-                      <Link href={`/courses/${courseId}/lectures`}>
-                        <BookOpen className="mr-2 h-4 w-4" /> 강의 보기
+                      <Link href={`/courses/${courseId}/lectures`} className="flex items-center">
+                        <BookOpen className="mr-2 h-4 w-4" /> <span>강의 보기</span>
                       </Link>
                     ) : (
                       <Button onClick={handleClickEnroll} disabled={isCheckingEnrollment}>
                         <BookOpen className="mr-2 h-4 w-4" /> 
-                        {isCheckingEnrollment ? "확인 중..." : "수강하러 가기"}
+                        {isCheckingEnrollment ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "수강하러 가기"}
                       </Button>
                     )}
                   </Button>
@@ -451,13 +452,13 @@ export default function CoursePage() {
               
             <Button disabled={isCheckingEnrollment}>
               {isEnrolled ? (
-                <Link href={`/courses/${courseId}/lectures`} className="text-xs md:text-sm">
-                  <BookOpen className="mr-2 h-4 w-4" /> 강의 보기
+                <Link href={`/courses/${courseId}/lectures`} className="text-xs md:text-sm flex items-center">
+                  <BookOpen className="mr-2 h-4 w-4" /> <span>강의 보기</span>
                 </Link>
               ) : (
                 <Button onClick={handleClickEnroll} className="text-xs md:text-sm" disabled={isCheckingEnrollment}>
                   <BookOpen className="mr-2 h-4 w-4" /> 
-                  {isCheckingEnrollment ? "확인 중..." : "수강하러 가기"}
+                  {isCheckingEnrollment ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "수강하러 가기"}
                 </Button>
               )}
             </Button>

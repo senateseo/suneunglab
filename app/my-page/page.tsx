@@ -131,7 +131,7 @@ export default function MyLecturesPage() {
                         asChild
                       >
                         <a
-                          href="https://o5rbbk4djjxsj1ym.public.blob.vercel-storage.com/2026ver%E1%84%89%E1%85%B3%E1%84%91%E1%85%A1%E1%84%85%E1%85%B3%E1%84%90%E1%85%A1-eZ4n8oWElWthLsJ6ypGyywt9iccuo0.pdf"
+                          href="https://o5rbbk4djjxsj1ym.public.blob.vercel-storage.com/2026ver%E1%84%89%E1%85%B3%E1%84%91%E1%85%A1%E1%84%85%E1%85%B3%E1%84%90%E1%85%A1_2-6fTsi2KkCrvf1tqYhgbpED9SxW15ZA.pdf"
                           download="2026ver스파르타.pdf"
                           target="_blank"
                           rel="noopener noreferrer"

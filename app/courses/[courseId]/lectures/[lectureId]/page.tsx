@@ -192,127 +192,99 @@ export default function LecturePage() {
     setSidebarOpen(!isMobile);
   }, [isMobile]);
 
-  // 실제 API에서 강의 데이터 가져오기
+  // 최적화된 API에서 강의 데이터 가져오기
   useEffect(() => {
     async function fetchCourseData() {
       try {
         setIsLoading(true);
-        console.log("강의 페이지: 강의 정보 가져오기 시작", { courseId });
-        console.log("강의 페이지: API 호출 시작", {
-          courseApiUrl: `/api/courses/${courseId}`,
-          modulesApiUrl: `/api/courses/${courseId}/modules`,
-        });
 
-        // 강의 정보 가져오기
-        const response = await fetch(`/api/courses/${courseId}`);
+        // 1단계: 코스 정보와 모듈 정보를 병렬로 가져오기
+        const [courseResponse, modulesResponse] = await Promise.all([
+          fetch(`/api/courses/${courseId}`),
+          fetch(`/api/courses/${courseId}/modules`)
+        ]);
 
-        if (!response.ok) {
-          const errorData = await response.json();
+        // 응답 상태 확인
+        if (!courseResponse.ok || !modulesResponse.ok) {
+          const courseError = !courseResponse.ok ? await courseResponse.json() : null;
+          const modulesError = !modulesResponse.ok ? await modulesResponse.json() : null;
           throw new Error(
-            errorData.error || "강의 정보를 가져오는 중 오류가 발생했습니다."
+            courseError?.error || modulesError?.error || "강의 데이터를 가져오는 중 오류가 발생했습니다."
           );
         }
 
-        const courseData = await response.json();
-        console.log("강의 페이지: 강의 정보 가져오기 성공", courseData);
-        console.log("강의 페이지: 강의 정보 응답", { status: response.status });
+        // 2단계: 응답 데이터를 병렬로 파싱
+        const [courseData, modulesData] = await Promise.all([
+          courseResponse.json(),
+          modulesResponse.json()
+        ]);
 
-        // 모듈 정보 가져오기
-        const modulesResponse = await fetch(`/api/courses/${courseId}/modules`);
+        // 3단계: 강의 정보와 진행상황을 병렬로 가져오기
+        const [modulesWithLectures, progressData] = await Promise.all([
+          // 각 모듈의 강의 정보를 병렬로 가져오기
+          Promise.all(
+            modulesData.map(async (module: Module) => {
+              try {
+                const lecturesResponse = await fetch(`/api/modules/${module.id}/lectures`);
+                if (!lecturesResponse.ok) {
+                  return { ...module, lectures: [] };
+                }
+                const lecturesData = await lecturesResponse.json();
+                return { ...module, lectures: lecturesData };
+              } catch {
+                return { ...module, lectures: [] };
+              }
+            })
+          ),
+          // 사용자 진행상황 가져오기
+          fetchUserProgress()
+        ]);
 
-        if (!modulesResponse.ok) {
-          const errorData = await modulesResponse.json();
-          throw new Error(
-            errorData.error || "모듈 정보를 가져오는 중 오류가 발생했습니다."
-          );
-        }
-
-        const modulesData = await modulesResponse.json();
-        console.log("강의 페이지: 모듈 정보 가져오기 성공", modulesData);
-        console.log("강의 페이지: 모듈 정보 응답", {
-          status: modulesResponse.status,
-        });
-
-        // 각 모듈의 강의 정보 가져오기
-        const modulesWithLectures = await Promise.all(
-          modulesData.map(async (module: Module) => {
-            const lecturesResponse = await fetch(
-              `/api/modules/${module.id}/lectures`
-            );
-
-            if (!lecturesResponse.ok) {
-              console.error(
-                `모듈 ${module.id}의 강의 정보를 가져오는 중 오류가 발생했습니다.`
-              );
-              return { ...module, lectures: [] };
-            }
-
-            const lecturesData = await lecturesResponse.json();
-            return { ...module, lectures: lecturesData };
-          })
-        );
-
-        // 강의 진행 상황 가져오기 (로그인한 경우)
-        let progressData = {};
-        if (user) {
-          try {
-            const progressResponse = await fetch(
-              `/api/users/progress?courseId=${courseId}&userId=${user.id}`
-            );
-            if (progressResponse.ok) {
-              const progress = await progressResponse.json();
-              progressData = progress.reduce(
-                (acc: Record<string, boolean>, item: any) => {
-                  acc[item.lecture_id] = item.completed;
-                  return acc;
-                },
-                {}
-              );
-              console.log("강의 진행 상황:", progressData);
-            }
-          } catch (error) {
-            console.error(
-              "강의 진행 상황을 가져오는 중 오류가 발생했습니다:",
-              error
-            );
-          }
-        }
-
-        // 강의 데이터 설정
+        // 4단계: 상태 업데이트
         setCourse({
           ...courseData,
           modules: modulesWithLectures.sort((a, b) => a.order - b.order),
         });
-
         setLectureProgress(progressData);
+
       } catch (error: any) {
-        console.error("Error fetching course data:", error);
-
-        // 더 자세한 오류 정보 로깅
-        if (error.response) {
-          console.error("API 응답 오류:", {
-            status: error.response.status,
-            data: error.response.data,
-          });
-        }
-
         toast({
           title: "오류 발생",
-          description:
-            "강의 데이터를 불러오는 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
+          description: error.message || "강의 데이터를 불러오는 중 오류가 발생했습니다.",
           variant: "destructive",
         });
-
-        // 오류 발생 시 이전 페이지로 이동하지 않고 오류 메시지 표시
-        setIsLoading(false);
         setCourse(null);
       } finally {
         setIsLoading(false);
       }
     }
 
+    // 사용자 진행상황을 가져오는 헬퍼 함수
+    async function fetchUserProgress(): Promise<Record<string, boolean>> {
+      if (!user) return {};
+      
+      try {
+        const progressResponse = await fetch(
+          `/api/users/progress?courseId=${courseId}&userId=${user.id}`
+        );
+        
+        if (!progressResponse.ok) return {};
+        
+        const progress = await progressResponse.json();
+        return progress.reduce(
+          (acc: Record<string, boolean>, item: any) => {
+            acc[item.lecture_id] = item.completed;
+            return acc;
+          },
+          {}
+        );
+      } catch {
+        return {};
+      }
+    }
+
     fetchCourseData();
-  }, [courseId, user, toast, router]);
+  }, [courseId, user, toast]);
 
   // 강의 완료 상태 토글
   const toggleLectureCompletion = async () => {

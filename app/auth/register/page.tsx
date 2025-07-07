@@ -18,7 +18,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/contexts/auth-context";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { supabase } from "../../../lib/supabase-client";
 
 export default function RegisterPage() {
@@ -67,12 +67,45 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     try {
-      await signUp(email, password, name);
+      // 먼저 이메일로 가입 시도 (기존 사용자 확인을 위해)
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            name,
+          },
+        },
+      });
+
+      console.log("회원가입 데이터:", data);
+
+      if (error) {
+        console.error("회원가입 오류:", error);
+        throw error;
+      }
+
+      // identities 배열 확인으로 기존 사용자 여부 판단
+      if (data.user && data.user.identities && data.user.identities.length === 0) {
+        // 이미 가입된 사용자 (소셜 로그인 포함)
+        toast({
+          title: "이미 가입된 이메일",
+          description: "이 이메일로 이미 가입된 계정이 있습니다. 소셜 로그인(구글/카카오)을 사용하시거나 로그인해주세요.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // 새 사용자 등록 성공
       toast({
         title: "회원가입 성공",
         description: "이메일 인증을 완료해주세요.",
       });
+
+      // 이메일 인증 페이지로 리디렉션
+      router.push("/auth/verify-email");
     } catch (error: any) {
+      console.error("회원가입 오류:", error);
       toast({
         title: "회원가입 실패",
         description: error.message || "회원가입 중 오류가 발생했습니다.",
@@ -185,7 +218,7 @@ export default function RegisterPage() {
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  enable-background="new 0 0 24 24"
+                  enableBackground="new 0 0 24 24"
                   viewBox="0 0 24 24"
                   id="kakaotalk"
                 >

@@ -84,17 +84,17 @@ export async function GET(request: Request, { params }: { params: { courseId: st
       modules: modulesWithLectures,
       instructor: instructorData
         ? {
-            name: instructorData.name || "송이삭",
-            title: "송이삭",
-            bio: "송이삭",
-            avatar: instructorData.avatar_url || "/placeholder.svg?height=100&width=100",
-          }
+          name: instructorData.name || "송이삭",
+          title: "송이삭",
+          bio: "송이삭",
+          avatar: instructorData.avatar_url || "/placeholder.svg?height=100&width=100",
+        }
         : {
-            name: "송이삭",
-            title: "송이삭",
-            bio: "송이삭",
-            avatar: "/placeholder.svg?height=100&width=100",
-          },
+          name: "송이삭",
+          title: "송이삭",
+          bio: "송이삭",
+          avatar: "/placeholder.svg?height=100&width=100",
+        },
       whatYouWillLearn: [
         "영어 문장 해석이 고민되는 학생",
         "영어 문장의 구조부터 배우고 싶은 학생",

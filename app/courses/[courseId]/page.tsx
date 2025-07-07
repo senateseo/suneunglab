@@ -33,17 +33,12 @@ export default function CoursePage() {
   const { toast } = useToast();
 
   useEffect(() => {
-    fetchCourse();
-  }, [courseId]);
-
-  // 사용자가 로그인한 상태일 때 enrollment 상태를 확인
-  useEffect(() => {
-    if (user && courseId) {
-      checkEnrollmentStatus();
-    } else {
-      setIsEnrolled(false);
-    }
-  }, [user, courseId]);
+    // 강의 정보와 수강 상태를 병렬로 가져오기
+    Promise.all([
+      fetchCourse(),
+      user ? checkEnrollmentStatus() : Promise.resolve()
+    ]);
+  }, [courseId, user]);
 
   // 페이지가 다시 포커스를 받을 때 enrollment 상태 재확인 (결제 후 돌아올 때)
   useEffect(() => {
@@ -74,28 +69,15 @@ export default function CoursePage() {
     
     try {
       setIsCheckingEnrollment(true);
-      const response = await fetch(`/api/users/enrollments?userId=${user.id}`);
+      // 단순히 enrollment 존재 여부만 확인
+      const response = await fetch(`/api/users/enrollment-status?userId=${user.id}&courseId=${courseId}`);
       
       if (response.ok) {
-        const enrollments = await response.json();
-        const enrolled = enrollments.some((enrollment: any) => enrollment.id === courseId);
-        setIsEnrolled(enrolled);
-      } else {
-        // API 호출이 실패한 경우 fallback으로 user.enrollments 사용
-        setIsEnrolled(
-          user.enrollments?.some(
-            (enrollment: any) => enrollment.course_id === courseId
-          ) || false
-        );
+        const { isEnrolled } = await response.json();
+        setIsEnrolled(isEnrolled);
       }
     } catch (error) {
       console.error("Error checking enrollment status:", error);
-      // 에러 발생 시 fallback으로 user.enrollments 사용
-      setIsEnrolled(
-        user.enrollments?.some(
-          (enrollment: any) => enrollment.course_id === courseId
-        ) || false
-      );
     } finally {
       setIsCheckingEnrollment(false);
     }

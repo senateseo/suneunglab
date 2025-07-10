@@ -113,7 +113,7 @@ function PaymentPageContent() {
           currency: "KRW",
           value: data.price,
         });
-        return data
+        return data;
       } catch (error) {
         console.error("Error fetching course:", error);
       } finally {
@@ -127,12 +127,27 @@ function PaymentPageContent() {
       }
 
       const course = await fetchCourse();
+      
+      // course가 없거나 price가 없는 경우 처리
+      if (!course || !course.price) {
+        console.error("Course or price is not available");
+        return;
+      }
+
+      // course.price를 숫자로 변환
+      const priceNumber = typeof course.price === 'string' 
+        ? parseFloat(course.price) 
+        : course.price;
+
+      // 유효한 숫자인지 확인
+      if (isNaN(priceNumber) || priceNumber <= 0) {
+        console.error("Invalid price value:", course.price);
+        return;
+      }
 
       // ------  주문서의 결제 금액 설정 ------
-      // TODO: 위젯의 결제금액을 결제하려는 금액으로 초기화하세요.
-      // TODO: renderPaymentMethods, renderAgreement, requestPayment 보다 반드시 선행되어야 합니다.
-      // @docs https://docs.tosspayments.com/sdk/v2/js#widgetssetamount
-      await widgets.setAmount(course.price);
+      // 숫자로 변환된 price를 전달
+      await widgets.setAmount(priceNumber);
 
       await Promise.all([
         // ------  결제 UI 렌더링 ------
@@ -152,7 +167,7 @@ function PaymentPageContent() {
     }
 
     renderPaymentWidgets();
-  }, [widgets, courseId]);
+  }, [widgets, courseId, course]);
 
   const handleAgreementChange = (key: string) => {
     setAgreements((prev) => ({

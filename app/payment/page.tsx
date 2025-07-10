@@ -109,10 +109,7 @@ function PaymentPageContent() {
         const response = await fetch(`/api/courses/${courseId}`);
         const data = await response.json();
         setCourse(data);
-        setAmount({
-          currency: "KRW",
-          value: data.price,
-        });
+ 
         return data;
       } catch (error) {
         console.error("Error fetching course:", error);
@@ -147,7 +144,10 @@ function PaymentPageContent() {
 
       // ------  주문서의 결제 금액 설정 ------
       // 숫자로 변환된 price를 전달
-      await widgets.setAmount(priceNumber);
+      await widgets.setAmount({
+        currency: "KRW",
+        value: priceNumber,
+      });
 
       await Promise.all([
         // ------  결제 UI 렌더링 ------
@@ -167,7 +167,7 @@ function PaymentPageContent() {
     }
 
     renderPaymentWidgets();
-  }, [widgets, courseId, course]);
+  }, [widgets, courseId]);
 
   const handleAgreementChange = (key: string) => {
     setAgreements((prev) => ({
@@ -237,7 +237,6 @@ function PaymentPageContent() {
 
   return (
     <>
-      (
       <div className="max-w-7xl mx-auto px-4 py-12">
         <Button
           variant="ghost"

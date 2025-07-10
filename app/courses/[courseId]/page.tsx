@@ -352,18 +352,20 @@ export default function CoursePage() {
                     </p>
                   </div>
 
-                  <Button size="lg" className="w-full mb-4 flex items-center" disabled={isCheckingEnrollment}>
+                  
                     {isEnrolled ? (
+                    <Button size="lg" className="w-full mb-4 flex items-center" disabled={isCheckingEnrollment}>
                       <Link href={`/courses/${courseId}/lectures`} className="flex items-center">
                         <BookOpen className="mr-2 h-4 w-4" /> <span>강의 보기</span>
                       </Link>
+                      </Button>
                     ) : (
                       <Button onClick={handleClickEnroll} disabled={isCheckingEnrollment} className="flex items-center">
                         <BookOpen className="mr-2 h-4 w-4" /> 
                         {isCheckingEnrollment ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <span>수강하러 가기</span>}
                       </Button>
                     )}
-                  </Button>
+                  
 
                   <div className="text-sm text-muted-foreground">
                     <p className="mb-4">이 강의에 포함된 내용:</p>

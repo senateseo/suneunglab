@@ -59,7 +59,7 @@ function PaymentPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const courseId = searchParams.get("courseId") || "1";
-  const [course, setCourse] = useState(null);
+  const [course, setCourse] = useState<any>(null);
   const [ready, setReady] = useState(false);
 
   const [agreements, setAgreements] = useState({
@@ -69,7 +69,7 @@ function PaymentPageContent() {
 
   const [amount, setAmount]: any = useState({
     currency: "KRW",
-    value: 1000,
+    value: course?.price || 0,
   });
 
   const [isProcessing, setIsProcessing] = useState(false);
@@ -148,7 +148,7 @@ function PaymentPageContent() {
     renderPaymentWidgets();
   }, [widgets, courseId]);
 
-  const handleAgreementChange = (key) => {
+  const handleAgreementChange = (key: string) => {
     setAgreements((prev) => ({
       ...prev,
       [key]: !prev[key],

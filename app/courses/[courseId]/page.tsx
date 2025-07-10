@@ -360,7 +360,7 @@ export default function CoursePage() {
                       </Link>
                       </Button>
                     ) : (
-                      <Button onClick={handleClickEnroll} disabled={isCheckingEnrollment} className="flex items-center">
+                      <Button onClick={handleClickEnroll} disabled={isCheckingEnrollment} className="flex items-center w-full mb-4">
                         <BookOpen className="mr-2 h-4 w-4" /> 
                         {isCheckingEnrollment ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <span>수강하러 가기</span>}
                       </Button>

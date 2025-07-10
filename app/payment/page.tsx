@@ -67,6 +67,7 @@ function PaymentPageContent() {
     privacy: false,
   });
 
+  console.log("course", course);
   const [amount, setAmount]: any = useState({
     currency: "KRW",
     value: course?.price || 0,
@@ -108,6 +109,13 @@ function PaymentPageContent() {
         const response = await fetch(`/api/courses/${courseId}`);
         const data = await response.json();
         setCourse(data);
+        setAmount({
+          currency: "KRW",
+          value: data.price,
+        });
+
+        await widgets.setAmount(data.price);
+        console.log("amount", amount);
       } catch (error) {
         console.error("Error fetching course:", error);
       } finally {

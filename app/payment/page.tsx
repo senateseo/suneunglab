@@ -113,9 +113,7 @@ function PaymentPageContent() {
           currency: "KRW",
           value: data.price,
         });
-
-        await widgets.setAmount(data.price);
-        console.log("amount", amount);
+        return data
       } catch (error) {
         console.error("Error fetching course:", error);
       } finally {
@@ -128,13 +126,13 @@ function PaymentPageContent() {
         return;
       }
 
-      await fetchCourse();
+      const course = await fetchCourse();
 
       // ------  주문서의 결제 금액 설정 ------
       // TODO: 위젯의 결제금액을 결제하려는 금액으로 초기화하세요.
       // TODO: renderPaymentMethods, renderAgreement, requestPayment 보다 반드시 선행되어야 합니다.
       // @docs https://docs.tosspayments.com/sdk/v2/js#widgetssetamount
-      await widgets.setAmount(amount);
+      await widgets.setAmount(course.price);
 
       await Promise.all([
         // ------  결제 UI 렌더링 ------

@@ -5,6 +5,7 @@ import { MainNav } from "@/components/main-nav";
 import { TopLoadingBar } from "@/components/top-loading-bar";
 import { AuthProvider } from "@/contexts/auth-context";
 import { Toaster } from "@/components/ui/toaster";
+import Script from "next/script";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -22,6 +23,20 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <body className={inter.className}>
+        {/* Google Analytics */}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-7K3H5MDYF0"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-7K3H5MDYF0');
+          `}
+        </Script>
+
         <ThemeProvider
           attribute="class"
           defaultTheme="light"
@@ -41,5 +56,3 @@ export default function RootLayout({
     </html>
   );
 }
-
-import "./globals.css";

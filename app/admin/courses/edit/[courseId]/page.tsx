@@ -24,9 +24,9 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { updateCourse, getCourseModules, createModule } from "@/lib/admin";
-import type { Course, Module } from "@/types";
+import type { Course, Module, Attachment } from "@/types";
 import { useToast } from "@/components/ui/use-toast";
-import { ArrowLeft, Plus, Save } from "lucide-react";
+import { ArrowLeft, Plus, Save, Trash2, ExternalLink } from "lucide-react";
 import { useAuth } from "@/contexts/auth-context";
 import Link from "next/link";
 
@@ -47,10 +47,14 @@ export default function CourseEditPage() {
     image_url: "",
     published: false,
     instructor_id: "",
+    for_text: "",
+    not_for: "",
   });
 
   const [modules, setModules] = useState<Module[]>([]);
   const [newModule, setNewModule] = useState({ title: "" });
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const [newAttachment, setNewAttachment] = useState({ name: "", url: "" });
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -90,6 +94,18 @@ export default function CourseEditPage() {
             const modulesData = await getCourseModules(courseId);
             setModules(modulesData);
           }
+
+          // 첨부파일 데이터 가져오기
+          try {
+            const attachmentsResponse = await fetch(`/api/admin/attachments?course_id=${courseId}`);
+            if (attachmentsResponse.ok) {
+              const attachmentsData = await attachmentsResponse.json();
+              setAttachments(attachmentsData);
+            }
+          } catch (attachmentError) {
+            console.error("Error fetching attachments:", attachmentError);
+            // 첨부파일 로드 실패는 전체 로딩을 막지 않음
+          }
         }
       }
     } catch (error) {
@@ -104,16 +120,16 @@ export default function CourseEditPage() {
     }
   }
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setCourse({ ...course, [name]: value });
   };
 
-  const handleSelectChange = (name, value) => {
+  const handleSelectChange = (name: string, value: string) => {
     setCourse({ ...course, [name]: value });
   };
 
-  const handleSwitchChange = (name, checked) => {
+  const handleSwitchChange = (name: string, checked: boolean) => {
     setCourse({ ...course, [name]: checked });
   };
 
@@ -155,7 +171,81 @@ export default function CourseEditPage() {
         title: "오류 발생",
         description:
           "모듈 추가 중 오류가 발생했습니다: " +
-          (error.message || "알 수 없는 오류"),
+          ((error as Error).message || "알 수 없는 오류"),
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleAddAttachment = async () => {
+    if (!newAttachment.name.trim() || !newAttachment.url.trim()) {
+      toast({
+        title: "첨부파일 정보 필요",
+        description: "첨부파일 이름과 URL을 모두 입력해주세요.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/admin/attachments`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          course_id: courseId,
+          name: newAttachment.name,
+          url: newAttachment.url,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "첨부파일 추가 중 오류가 발생했습니다.");
+      }
+
+      const newAttachmentData = await response.json();
+
+      setAttachments([...attachments, newAttachmentData]);
+      setNewAttachment({ name: "", url: "" });
+
+      toast({
+        title: "첨부파일 추가 완료",
+        description: "새 첨부파일이 성공적으로 추가되었습니다.",
+      });
+    } catch (error: any) {
+      console.error("Error adding attachment:", error);
+      toast({
+        title: "오류 발생",
+        description: "첨부파일 추가 중 오류가 발생했습니다: " + (error.message || "알 수 없는 오류"),
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDeleteAttachment = async (attachmentId: string) => {
+    try {
+      const response = await fetch(`/api/admin/attachments/${attachmentId}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "첨부파일 삭제 중 오류가 발생했습니다.");
+      }
+
+      setAttachments(attachments.filter(att => att.id !== attachmentId));
+
+      toast({
+        title: "첨부파일 삭제 완료",
+        description: "첨부파일이 성공적으로 삭제되었습니다.",
+      });
+    } catch (error: any) {
+      console.error("Error deleting attachment:", error);
+      toast({
+        title: "오류 발생",
+        description: "첨부파일 삭제 중 오류가 발생했습니다: " + (error.message || "알 수 없는 오류"),
         variant: "destructive",
       });
     }
@@ -200,6 +290,8 @@ export default function CourseEditPage() {
         image_url,
         published,
         instructor_id,
+        for_text,
+        not_for,
       } = course;
 
       const courseData = {
@@ -213,6 +305,8 @@ export default function CourseEditPage() {
         image_url,
         published,
         instructor_id,
+        for_text,
+        not_for,
       };
 
       console.log("강의 업데이트 데이터:", courseData);
@@ -233,7 +327,7 @@ export default function CourseEditPage() {
         title: "오류 발생",
         description:
           "강의 업데이트 중 오류가 발생했습니다: " +
-          (error.message || "알 수 없는 오류"),
+          ((error as Error).message || "알 수 없는 오류"),
         variant: "destructive",
       });
     } finally {
@@ -394,6 +488,97 @@ export default function CourseEditPage() {
                   rows={6}
                 />
               </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label htmlFor="for_text">이런 분들에게 추천</Label>
+                  <Textarea
+                    id="for_text"
+                    name="for_text"
+                    value={course.for_text || ""}
+                    onChange={handleInputChange}
+                    placeholder="이 강의를 추천하는 대상을 입력하세요"
+                    rows={4}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="not_for">이런 분들에게는 비추천</Label>
+                  <Textarea
+                    id="not_for"
+                    name="not_for"
+                    value={course.not_for || ""}
+                    onChange={handleInputChange}
+                    placeholder="이 강의를 비추천하는 대상을 입력하세요"
+                    rows={4}
+                  />
+                </div>
+              </div>
+
+              {/* 첨부파일 관리 섹션 */}
+              <div className="space-y-4 mt-8">
+                <h3 className="text-lg font-medium">첨부파일</h3>
+
+                {attachments.length === 0 ? (
+                  <div className="text-center py-8 border rounded-md bg-muted/30">
+                    <p className="text-muted-foreground">아직 첨부파일이 없습니다. 새 첨부파일을 추가하세요.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {attachments.map((attachment) => (
+                      <div key={attachment.id} className="flex items-center justify-between p-4 border rounded-md">
+                        <div className="flex items-center gap-3">
+                          <div>
+                            <h4 className="font-medium">{attachment.name}</h4>
+                            <p className="text-sm text-muted-foreground">{attachment.url}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Button variant="outline" size="sm" asChild>
+                            <a href={attachment.url} target="_blank" rel="noopener noreferrer">
+                              <ExternalLink className="h-4 w-4 mr-2" />
+                              열기
+                            </a>
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={() => handleDeleteAttachment(attachment.id)}
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            삭제
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="attachment-name">첨부파일 이름</Label>
+                    <Input
+                      id="attachment-name"
+                      value={newAttachment.name}
+                      onChange={(e) => setNewAttachment({ ...newAttachment, name: e.target.value })}
+                      placeholder="첨부파일 이름을 입력하세요"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="attachment-url">파일 URL</Label>
+                    <Input
+                      id="attachment-url"
+                      value={newAttachment.url}
+                      onChange={(e) => setNewAttachment({ ...newAttachment, url: e.target.value })}
+                      placeholder="파일 URL을 입력하세요"
+                    />
+                  </div>
+                </div>
+                <Button onClick={handleAddAttachment} className="mt-2">
+                  <Plus className="h-4 w-4 mr-2" />
+                  첨부파일 추가
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -427,9 +612,7 @@ export default function CourseEditPage() {
                           </h4>
                           <p className="text-sm text-muted-foreground">
                             {/* 강의 수를 표시할 수 있음 */}
-                            {module.lessons
-                              ? `${module.lessons.length}개 강의`
-                              : "0개 강의"}
+                            강의 관리
                           </p>
                         </div>
                         <Button variant="outline" asChild>
@@ -460,6 +643,8 @@ export default function CourseEditPage() {
                   </Button>
                 </div>
               </div>
+
+
             </CardContent>
           </Card>
         </TabsContent>

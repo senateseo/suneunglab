@@ -30,6 +30,18 @@ export interface Course {
   created_at: string
   updated_at: string
   published: boolean
+  for_text?: string
+  not_for?: string
+}
+
+// 첨부파일 타입
+export interface Attachment {
+  id: string
+  course_id: string
+  name: string
+  url: string
+  created_at: string
+  updated_at: string
 }
 
 // 모듈 타입

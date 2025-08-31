@@ -112,6 +112,8 @@ export default function CoursePage() {
 
       const data = await response.json();
 
+      console.log("COURSE DATA: ", data);
+
       setCourse(data);
     } catch (error) {
       console.error("Error fetching course:", error);
@@ -263,26 +265,37 @@ export default function CoursePage() {
               <TabsContent value="overview">
                 <Card>
                   <CardContent className="p-6">
-                    <h3 className="text-xl font-semibold mb-4">추천 수강대상</h3>
-                    <ul className="grid md:grid-cols-2 gap-3">
-                      {course.whatYouWillLearn?.map((item: string, index: number) => (
-                        <li key={index} className="flex items-start gap-2">
-                          <CheckCircle2 className="h-5 w-5 text-primary mt-0.5" />
-                          <span>{item}</span>
-                        </li>
-                      ))}
-                    </ul>
+                    {/* 추천 수강대상 */}
+                    {course.for_text && (
+                      <>
+                        <h3 className="text-xl font-semibold mb-4">추천 수강대상</h3>
+                        <ul className="grid md:grid-cols-2 gap-3">
+                          {course.for_text.split('\n').filter(item => item.trim()).map((item: string, index: number) => (
+                            <li key={index} className="flex items-start gap-2">
+                              <CheckCircle2 className="h-5 w-5 text-primary mt-0.5" />
+                              <span>{item.trim()}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </>
+                    )}
 
-                    <div className="my-8"></div>
-                    <h3 className="text-xl font-semibold mb-4">이런 학생은 듣지 마세요</h3>
-                    <ul className="grid md:grid-cols-2 gap-3">
-                      {["작년 수능 기준 1등급 나오는 학생", "이미 방향성을 잡고 열심히 공부하고 있는 학생"].map((item, index) => (
-                        <li key={index} className="flex items-start gap-2">
-                          <X className="h-5 w-5 text-primary mt-0.5" />
-                          <span>{item}</span>
-                        </li>
-                      ))}
-                    </ul>
+                    {/* 비추천 대상 */}
+                    {course.not_for && (
+                      <>
+                        <div className="my-8"></div>
+                        <h3 className="text-xl font-semibold mb-4">이런 학생은 듣지 마세요</h3>
+                        <ul className="grid md:grid-cols-2 gap-3">
+                          {course.not_for.split('\n').filter(item => item.trim()).map((item: string, index: number) => (
+                            <li key={index} className="flex items-start gap-2">
+                              <X className="h-5 w-5 text-primary mt-0.5" />
+                              <span>{item.trim()}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </>
+                    )}
+
                     {/* 
                     <h3 className="text-xl font-semibold mt-8 mb-4">
                       강사 소개

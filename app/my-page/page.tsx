@@ -3,9 +3,15 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { FolderDown, Loader } from "lucide-react";
+import { FolderDown, Loader, ChevronDown } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useAuth } from "../../contexts/auth-context";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 // Function to fetch enrolled courses
 async function getEnrolledCourses(userId: string): Promise<any[]> {
@@ -44,6 +50,23 @@ export default function MyLecturesPage() {
   const { user } = useAuth();
   const [enrolledCourses, setEnrolledCourses] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [courseAttachments, setCourseAttachments] = useState<{[courseId: string]: any[]}>({});
+
+  // 첨부파일 가져오기 함수
+  const fetchCourseAttachments = async (courseId: string) => {
+    try {
+      const response = await fetch(`/api/admin/attachments?course_id=${courseId}`);
+      if (response.ok) {
+        const attachments = await response.json();
+        setCourseAttachments(prev => ({
+          ...prev,
+          [courseId]: attachments
+        }));
+      }
+    } catch (error) {
+      console.error("Failed to fetch attachments for course:", courseId, error);
+    }
+  };
 
   useEffect(() => {
     if (user) {
@@ -54,6 +77,13 @@ export default function MyLecturesPage() {
 
           console.log("ENROLLMENT API: 수강 강의 목록", { courses });
           setEnrolledCourses(courses);
+          
+          // 각 강의의 첨부파일 가져오기
+          courses.forEach(course => {
+            if (course.id) {
+              fetchCourseAttachments(course.id);
+            }
+          });
         } catch (error) {
           console.error("Failed to fetch enrolled courses:", error);
         } finally {
@@ -126,20 +156,36 @@ export default function MyLecturesPage() {
                           강의보기
                         </Link>
                       </Button>
-                      <Button
-                        className="mt-4 md:mt-0 bg-gray-100 text-gray-800 hover:bg-gray-200 hover:text-gray-900"
-                        asChild
-                      >
-                        <a
-                          href="https://o5rbbk4djjxsj1ym.public.blob.vercel-storage.com/2026ver%E1%84%89%E1%85%B3%E1%84%91%E1%85%A1%E1%84%85%E1%85%B3%E1%84%90%E1%85%A1_2-6fTsi2KkCrvf1tqYhgbpED9SxW15ZA.pdf"
-                          download="2026ver스파르타.pdf"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          <FolderDown className="h-4 w-4" />
-                          강의 자료
-                        </a>
-                      </Button>
+                      {/* 첨부파일 드롭다운 - 첨부파일이 있는 경우에만 표시 */}
+                      {courseAttachments[course.id] && courseAttachments[course.id].length > 0 && (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              className="mt-4 md:mt-0 bg-gray-100 text-gray-800 hover:bg-gray-200 hover:text-gray-900"
+                            >
+                              <FolderDown className="h-4 w-4 mr-2" />
+                              강의 자료
+                              <ChevronDown className="h-4 w-4 ml-2" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-56">
+                            {courseAttachments[course.id].map((attachment) => (
+                              <DropdownMenuItem key={attachment.id} asChild>
+                                <a
+                                  href={attachment.url}
+                                  download={attachment.name}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex items-center w-full cursor-pointer"
+                                >
+                                  <FolderDown className="h-4 w-4 mr-2" />
+                                  {attachment.name}
+                                </a>
+                              </DropdownMenuItem>
+                            ))}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      )}
                     </div>
                   </div>
                 </div>

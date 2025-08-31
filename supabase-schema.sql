@@ -43,6 +43,18 @@ price DECIMAL(10, 2) NOT NULL,
 image_url TEXT,
 instructor_id UUID REFERENCES auth.users NOT NULL,
 published BOOLEAN DEFAULT FALSE,
+for_text TEXT,
+not_for TEXT,
+created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW()),
+updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW())
+);
+
+-- 첨부파일 테이블
+CREATE TABLE IF NOT EXISTS attachments (
+id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+course_id UUID REFERENCES courses ON DELETE CASCADE NOT NULL,
+name TEXT NOT NULL,
+url TEXT NOT NULL,
 created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW()),
 updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW())
 );
@@ -93,6 +105,7 @@ UNIQUE(user_id, lecture_id)
 -- RLS 정책 설정
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE courses ENABLE ROW LEVEL SECURITY;
+ALTER TABLE attachments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE modules ENABLE ROW LEVEL SECURITY;
 ALTER TABLE lectures ENABLE ROW LEVEL SECURITY;
 ALTER TABLE enrollments ENABLE ROW LEVEL SECURITY;
@@ -112,6 +125,9 @@ USING (auth.jwt() ->> 'role' = 'admin');
 CREATE POLICY "Admins can do anything" ON courses
 USING (auth.jwt() ->> 'role' = 'admin');
 
+CREATE POLICY "Admins can do anything" ON attachments
+USING (auth.jwt() ->> 'role' = 'admin');
+
 CREATE POLICY "Admins can do anything" ON modules
 USING (auth.jwt() ->> 'role' = 'admin');
 
@@ -127,6 +143,15 @@ USING (auth.jwt() ->> 'role' = 'admin');
 -- 강의 정책
 CREATE POLICY "Published courses are viewable by everyone" ON courses
 FOR SELECT USING (published = true);
+
+-- 첨부파일 정책
+CREATE POLICY "Attachments of published courses are viewable by everyone" ON attachments
+FOR SELECT USING (
+  EXISTS (
+    SELECT 1 FROM courses
+    WHERE courses.id = attachments.course_id AND courses.published = true
+  )
+);
 
 -- 모듈 및 강의 정책
 CREATE POLICY "Modules of published courses are viewable by everyone" ON modules
